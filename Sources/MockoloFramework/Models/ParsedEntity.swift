@@ -128,6 +128,23 @@ struct AnnotationMetadata {
     var combineTypes: [String: CombineType]?
 }
 
+struct GenerationArguments {
+    var useTemplateFunc: Bool
+    var useMockObservable: Bool
+    var allowSetCallCount: Bool
+    var mockFinal: Bool
+    var enableFuncArgsHistory: Bool
+    var disableCombineDefaultValues: Bool
+    static let `default` = GenerationArguments(
+        useTemplateFunc: false,
+        useMockObservable: false,
+        allowSetCallCount: false,
+        mockFinal: false,
+        enableFuncArgsHistory: false,
+        disableCombineDefaultValues: false
+    )
+}
+
 public typealias ImportMap = [String: [String: [String]]]
 
 /// Metadata for a type being mocked

@@ -209,7 +209,11 @@ final class MethodModel: Model {
         return name(by: level - 1) + postfix
     }
 
-    func render(with identifier: String, encloser: String, useTemplateFunc: Bool, useMockObservable: Bool, allowSetCallCount: Bool = false, mockFinal: Bool = false, enableFuncArgsHistory: Bool, disableCombineDefaultValues: Bool = false) -> String? {
+    func render(
+        with identifier: String,
+        encloser: String,
+        generationArguments: GenerationArguments
+    ) -> String? {
         if processed {
             var prefix = shouldOverride  ? "\(String.override) " : ""
 
@@ -228,9 +232,7 @@ final class MethodModel: Model {
         let result = applyMethodTemplate(name: name,
                                          identifier: identifier,
                                          kind: kind,
-                                         useTemplateFunc: useTemplateFunc,
-                                         allowSetCallCount: allowSetCallCount,
-                                         enableFuncArgsHistory: enableFuncArgsHistory,
+                                         generationArguments: generationArguments,
                                          isStatic: isStatic,
                                          customModifiers: customModifiers,
                                          isOverride: shouldOverride,

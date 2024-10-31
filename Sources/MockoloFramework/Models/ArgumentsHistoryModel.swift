@@ -33,8 +33,12 @@ final class ArgumentsHistoryModel: Model {
         return force || isHistoryAnnotated
     }
     
-    func render(with identifier: String, encloser: String, useTemplateFunc: Bool = false, useMockObservable: Bool = false, allowSetCallCount: Bool = false, mockFinal: Bool = false, enableFuncArgsHistory: Bool, disableCombineDefaultValues: Bool = false) -> String? {
-        guard enable(force: enableFuncArgsHistory) else {
+    func render(
+        with identifier: String,
+        encloser: String,
+        generationArguments: GenerationArguments
+    ) -> String? {
+        guard enable(force: generationArguments.enableFuncArgsHistory) else {
             return nil
         }
         

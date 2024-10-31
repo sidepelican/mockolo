@@ -52,7 +52,11 @@ final class ClosureModel: Model {
         )
     }
     
-    func render(with identifier: String, encloser: String, useTemplateFunc: Bool = false, useMockObservable: Bool = false, allowSetCallCount: Bool = false, mockFinal: Bool = false, enableFuncArgsHistory: Bool = false, disableCombineDefaultValues: Bool = false) -> String? {
+    func render(
+        with identifier: String,
+        encloser: String,
+        generationArguments: GenerationArguments = .default
+    ) -> String? {
         return applyClosureTemplate(name: identifier + .handlerSuffix,
                                     paramVals: paramNames,
                                     paramTypes: paramTypes,

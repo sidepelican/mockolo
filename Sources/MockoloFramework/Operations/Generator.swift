@@ -139,13 +139,16 @@ public func generate(sourceDirs: [String],
     
     signpost_begin(name: "Render models")
     log("Render models with templates...", level: .info)
-    renderTemplates(entities: resolvedEntities,
-                    useTemplateFunc: useTemplateFunc,
-                    useMockObservable: useMockObservable,
-                    allowSetCallCount: allowSetCallCount,
-                    mockFinal: mockFinal,
-                    enableFuncArgsHistory: enableFuncArgsHistory,
-                    disableCombineDefaultValues: disableCombineDefaultValues
+    renderTemplates(
+        entities: resolvedEntities,
+        generationArguments: .init(
+            useTemplateFunc: useTemplateFunc,
+            useMockObservable: useMockObservable,
+            allowSetCallCount: allowSetCallCount,
+            mockFinal: mockFinal,
+            enableFuncArgsHistory: enableFuncArgsHistory,
+            disableCombineDefaultValues: disableCombineDefaultValues
+        )
     ) { (mockString: String, offset: Int64) in
                         candidates.append((mockString, offset))
     }

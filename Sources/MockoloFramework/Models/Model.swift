@@ -28,7 +28,7 @@ public enum ModelType {
 }
 
 /// Represents a model for an entity such as var, func, class, etc.
-public protocol Model {
+protocol Model {
     /// Identifier
     var name: String { get set }
 
@@ -57,12 +57,7 @@ public protocol Model {
     /// Applies a corresponding template to this model to output mocks
     func render(with identifier: String,
                 encloser: String,
-                useTemplateFunc: Bool,
-                useMockObservable: Bool,
-                allowSetCallCount: Bool,
-                mockFinal: Bool,
-                enableFuncArgsHistory: Bool,
-                disableCombineDefaultValues: Bool
+                generationArguments: GenerationArguments
     ) -> String?
 
     /// Used to differentiate multiple entities with the same name

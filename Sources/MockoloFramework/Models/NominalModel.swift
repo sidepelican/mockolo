@@ -72,12 +72,7 @@ final class NominalModel: Model {
     func render(
         with identifier: String,
         encloser: String,
-        useTemplateFunc: Bool,
-        useMockObservable: Bool,
-        allowSetCallCount: Bool = false,
-        mockFinal: Bool = false,
-        enableFuncArgsHistory: Bool = false,
-        disableCombineDefaultValues: Bool = false
+        generationArguments: GenerationArguments
     ) -> String? {
         return applyNominalTemplate(
             name: name,
@@ -87,12 +82,7 @@ final class NominalModel: Model {
             declTypeOfMockAnnotatedBaseType: declTypeOfMockAnnotatedBaseType,
             inheritedTypes: inheritedTypes,
             metadata: metadata,
-            useTemplateFunc: useTemplateFunc,
-            useMockObservable: useMockObservable,
-            allowSetCallCount: allowSetCallCount,
-            mockFinal: mockFinal,
-            enableFuncArgsHistory: enableFuncArgsHistory,
-            disableCombineDefaultValues: disableCombineDefaultValues,
+            generationArguments: generationArguments,
             initParamCandidates: initParamCandidates,
             declaredInits: declaredInits,
             entities: entities

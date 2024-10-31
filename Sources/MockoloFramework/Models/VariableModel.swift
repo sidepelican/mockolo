@@ -77,7 +77,11 @@ final class VariableModel: Model {
         self.combineType = combineType
     }
 
-    func render(with identifier: String, encloser: String, useTemplateFunc: Bool = false, useMockObservable: Bool = false, allowSetCallCount: Bool = false, mockFinal: Bool = false, enableFuncArgsHistory: Bool = false, disableCombineDefaultValues: Bool = false) -> String? {
+    func render(
+        with identifier: String,
+        encloser: String,
+        generationArguments: GenerationArguments
+    ) -> String? {
         if processed {
             guard let modelDescription = modelDescription?.trimmingCharacters(in: .newlines), !modelDescription.isEmpty else {
                 return nil
@@ -94,7 +98,7 @@ final class VariableModel: Model {
             return prefix + modelDescription
         }
 
-        if !disableCombineDefaultValues {
+        if !generationArguments.disableCombineDefaultValues {
             if let combineVar = applyCombineVariableTemplate(name: identifier,
                                                             type: type,
                                                             encloser: encloser,
@@ -110,8 +114,8 @@ final class VariableModel: Model {
                                                encloser: encloser,
                                                rxTypes: rxTypes,
                                                shouldOverride: shouldOverride,
-                                               useMockObservable: useMockObservable,
-                                               allowSetCallCount: allowSetCallCount,
+                                               useMockObservable: generationArguments.useMockObservable,
+                                               allowSetCallCount: generationArguments.allowSetCallCount,
                                                isStatic: isStatic,
                                                accessLevel: accessLevel) {
             return rxVar
@@ -122,7 +126,7 @@ final class VariableModel: Model {
                                      encloser: encloser,
                                      isStatic: isStatic,
                                      customModifiers: customModifiers,
-                                     allowSetCallCount: allowSetCallCount,
+                                     allowSetCallCount: generationArguments.allowSetCallCount,
                                      shouldOverride: shouldOverride,
                                      accessLevel: accessLevel)
     }

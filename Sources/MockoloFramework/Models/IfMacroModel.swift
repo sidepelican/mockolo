@@ -39,7 +39,15 @@ final class IfMacroModel: Model {
         self.type = SwiftType(name)
     }
     
-    func render(with identifier: String, encloser: String, useTemplateFunc: Bool, useMockObservable: Bool, allowSetCallCount: Bool = false, mockFinal: Bool = false, enableFuncArgsHistory: Bool = false, disableCombineDefaultValues: Bool = false) -> String? {
-        return applyMacroTemplate(name: name, useTemplateFunc: useTemplateFunc, useMockObservable: useMockObservable, allowSetCallCount: allowSetCallCount, mockFinal: mockFinal, enableFuncArgsHistory: enableFuncArgsHistory, disableCombineDefaultValues: disableCombineDefaultValues, entities: entities)
+    func render(
+        with identifier: String,
+        encloser: String,
+        generationArguments: GenerationArguments
+    ) -> String? {
+        return applyMacroTemplate(
+            name: name,
+            generationArguments: generationArguments,
+            entities: entities
+        )
     }
 }

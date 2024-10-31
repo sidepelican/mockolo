@@ -20,9 +20,7 @@ extension MethodModel {
     func applyMethodTemplate(name: String,
                              identifier: String,
                              kind: MethodKind,
-                             useTemplateFunc: Bool,
-                             allowSetCallCount: Bool,
-                             enableFuncArgsHistory: Bool,
+                             generationArguments: GenerationArguments,
                              isStatic: Bool,
                              customModifiers: [String: Modifier]?,
                              isOverride: Bool,
@@ -67,7 +65,7 @@ extension MethodModel {
             let keyword = isSubscript ? "" : "func "
             var body = ""
 
-            if useTemplateFunc {
+            if generationArguments.useTemplateFunc {
                 let callMockFunc = !throwing.hasError && (handler.type.cast?.isEmpty ?? false)
                 if callMockFunc {
                     let handlerParamValsStr = params.map { (arg) -> String in
@@ -97,8 +95,8 @@ extension MethodModel {
                 \(2.tab)\(callCount) += 1
                 """
 
-                if let argsHistory = argsHistory, argsHistory.enable(force: enableFuncArgsHistory) {
-                    let argsHistoryCapture = argsHistory.render(with: identifier, encloser: "", enableFuncArgsHistory: enableFuncArgsHistory) ?? ""
+                if let argsHistory = argsHistory, argsHistory.enable(force: generationArguments.enableFuncArgsHistory) {
+                    let argsHistoryCapture = argsHistory.render(with: identifier, encloser: "", generationArguments: generationArguments) ?? ""
 
                     body = """
                     \(body)
@@ -130,14 +128,14 @@ extension MethodModel {
             } else {
                 modifierTypeStr = ""
             }
-            let privateSetSpace = allowSetCallCount ? "" : "\(String.privateSet) "
+            let privateSetSpace = generationArguments.allowSetCallCount ? "" : "\(String.privateSet) "
 
             template = """
 
             \(1.tab)\(acl)\(staticStr)\(privateSetSpace)var \(callCount) = 0
             """
 
-            if let argsHistory = argsHistory, argsHistory.enable(force: enableFuncArgsHistory) {
+            if let argsHistory = argsHistory, argsHistory.enable(force: generationArguments.enableFuncArgsHistory) {
                 let argsHistoryVarName = "\(identifier)\(String.argsHistorySuffix)"
                 let argsHistoryVarType = argsHistory.type.typeName
 

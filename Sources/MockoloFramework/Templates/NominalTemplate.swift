@@ -24,12 +24,7 @@ extension NominalModel {
                               declTypeOfMockAnnotatedBaseType: DeclType,
                               inheritedTypes: [String],
                               metadata: AnnotationMetadata?,
-                              useTemplateFunc: Bool,
-                              useMockObservable: Bool,
-                              allowSetCallCount: Bool,
-                              mockFinal: Bool,
-                              enableFuncArgsHistory: Bool,
-                              disableCombineDefaultValues: Bool,
+                              generationArguments: GenerationArguments,
                               initParamCandidates: [VariableModel],
                               declaredInits: [MethodModel],
                               entities: [(String, Model)]) -> String {
@@ -50,7 +45,7 @@ extension NominalModel {
                 if model.modelType == .method, model.isInitializer, !model.processed {
                     return nil
                 }
-                if let ret = model.render(with: uniqueId, encloser: name, useTemplateFunc: useTemplateFunc, useMockObservable: useMockObservable, allowSetCallCount: allowSetCallCount, mockFinal: mockFinal, enableFuncArgsHistory: enableFuncArgsHistory, disableCombineDefaultValues: disableCombineDefaultValues) {
+                if let ret = model.render(with: uniqueId, encloser: name, generationArguments: generationArguments) {
                     return (ret, model.offset)
                 }
                 return nil
@@ -94,7 +89,7 @@ extension NominalModel {
             body += "\(renderedEntities)"
         }
 
-        let finalStr = mockFinal ? "\(String.final) " : ""
+        let finalStr = generationArguments.mockFinal ? "\(String.final) " : ""
         let template = """
         \(attribute)
         \(acl)\(finalStr)\(declKind.rawValue) \(name): \(inheritedTypes.joined(separator: ", ")) {
