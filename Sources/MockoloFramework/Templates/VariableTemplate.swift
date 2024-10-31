@@ -25,7 +25,8 @@ extension VariableModel {
                                customModifiers: [String: Modifier]?,
                                allowSetCallCount: Bool,
                                shouldOverride: Bool,
-                               accessLevel: String) -> String {
+                               accessLevel: String,
+                               context: MemberRenderContext) -> String {
 
         let underlyingSetCallCount = "\(name)\(String.setCallCountSuffix)"
         let underlyingVarDefaultVal = type.defaultVal()
@@ -59,7 +60,7 @@ extension VariableModel {
 
         let staticSpace = isStatic ? "\(String.static) " : ""
 
-        switch storageType {
+        switch storageKind {
         case .stored(let needSetCount):
             let setCallCountVarDecl = needSetCount ? """
             \(1.tab)\(acl)\(staticSpace)\(privateSetSpace)var \(underlyingSetCallCount) = 0
@@ -113,9 +114,8 @@ extension VariableModel {
                 paramTypes: [],
                 isAsync: effects.isAsync,
                 throwing: effects.throwing,
-                returnType: type,
-                encloser: ""
-            ).render(with: name, encloser: "") ?? "")
+                returnType: type
+            ).render(with: name, context: context) ?? "")
                 .addingIndent(1)
 
             return """

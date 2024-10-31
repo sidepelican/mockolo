@@ -90,8 +90,8 @@ final class ParamModel: Model {
     
     func render(
         with identifier: String,
-        encloser: String,
-        generationArguments: GenerationArguments = .default
+        context: Void = (),
+        arguments: GenerationArguments = .default
     ) -> String? {
         return applyParamTemplate(name: name, label: label, type: type, inInit: inInit)
     }

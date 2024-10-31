@@ -20,8 +20,8 @@ final class IfMacroModel: Model {
     var name: String
     var offset: Int64
     var type: SwiftType
-    let entities: [Model]
-    
+    let entities: [any Model<MemberRenderContext>]
+
     var modelType: ModelType {
         return .macro
     }
@@ -32,7 +32,7 @@ final class IfMacroModel: Model {
     
     init(name: String,
          offset: Int64,
-         entities: [Model]) {
+         entities: [any Model<MemberRenderContext>]) {
         self.name = name
         self.entities = entities
         self.offset = offset
@@ -41,12 +41,13 @@ final class IfMacroModel: Model {
     
     func render(
         with identifier: String,
-        encloser: String,
-        generationArguments: GenerationArguments
+        context: MemberRenderContext,
+        arguments: GenerationArguments
     ) -> String? {
         return applyMacroTemplate(
             name: name,
-            generationArguments: generationArguments,
+            context: context,
+            arguments: arguments,
             entities: entities
         )
     }

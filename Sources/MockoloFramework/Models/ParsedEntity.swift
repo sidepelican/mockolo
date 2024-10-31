@@ -20,7 +20,7 @@ import Foundation
 struct ResolvedEntity {
     let key: String
     let entity: Entity
-    let uniqueModels: [(String, Model)]
+    let uniqueModels: [(String, any Model)]
     let attributes: [String]
     let inheritedTypes: [String]
     var inheritsActorProtocol: Bool
@@ -53,7 +53,7 @@ struct ResolvedEntity {
         return result
     }
 
-    func model() -> Model {
+    func model() -> NominalModel {
         return NominalModel(identifier: key,
                             namespaces: entity.entityNode.namespaces,
                             acl: entity.entityNode.accessLevel,
@@ -90,9 +90,9 @@ protocol EntityNode {
 
 final class EntityNodeSubContainer {
     let attributes: [String]
-    let members: [Model]
+    let members: [any Model]
     let hasInit: Bool
-    init(attributes: [String], members: [Model], hasInit: Bool) {
+    init(attributes: [String], members: [any Model], hasInit: Bool) {
         self.attributes = attributes
         self.members = members
         self.hasInit = hasInit

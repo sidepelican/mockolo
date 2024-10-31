@@ -152,7 +152,7 @@ extension MemberBlockItemSyntax {
         return modifiers?.acl ?? ""
     }
 
-    func transformToModel(with encloserAcl: String, declType: DeclType, metadata: AnnotationMetadata?, processed: Bool) -> (Model, String?, Bool)? {
+    func transformToModel(with encloserAcl: String, declType: DeclType, metadata: AnnotationMetadata?, processed: Bool) -> (any Model, String?, Bool)? {
         if let varMember = self.decl.as(VariableDeclSyntax.self) {
             if validateMember(varMember.modifiers, declType, processed: processed) {
                 let acl = memberAcl(varMember.modifiers, encloserAcl, declType)
@@ -213,7 +213,7 @@ extension MemberBlockItemListSyntax {
 
     func memberData(with encloserAcl: String, declType: DeclType, metadata: AnnotationMetadata?, processed: Bool) -> EntityNodeSubContainer {
         var attributeList = [String]()
-        var memberList = [Model]()
+        var memberList = [any Model]()
         var hasInit = false
 
         for m in self {
@@ -230,8 +230,8 @@ extension MemberBlockItemListSyntax {
 }
 
 extension IfConfigDeclSyntax {
-    func model(with encloserAcl: String, declType: DeclType, metadata: AnnotationMetadata?, processed: Bool) -> (Model, String?, Bool) {
-        var subModels = [Model]()
+    func model(with encloserAcl: String, declType: DeclType, metadata: AnnotationMetadata?, processed: Bool) -> (any Model, String?, Bool) {
+        var subModels = [any Model<MemberRenderContext>]()
         var attrDesc: String?
         var hasInit = false
 
@@ -242,7 +242,9 @@ extension IfConfigDeclSyntax {
                     name = desc
                     for element in list {
                         if let (item, attr, initFlag) = element.transformToModel(with: encloserAcl, declType: declType, metadata: metadata, processed: processed) {
-                            subModels.append(item)
+                            if let item = item as? any Model<MemberRenderContext> {
+                                subModels.append(item)
+                            }
                             if let attr = attr, attr.contains(String.available) {
                                 attrDesc = attr
                             }
@@ -409,12 +411,12 @@ extension AttributeListSyntax {
 }
 
 extension VariableDeclSyntax {
-    func models(with acl: String, declType: DeclType, metadata: AnnotationMetadata?, processed: Bool) -> [Model] {
+    func models(with acl: String, declType: DeclType, metadata: AnnotationMetadata?, processed: Bool) -> [VariableModel] {
         // Detect whether it's static
         let isStatic = self.modifiers.isStatic
 
         // Need to access pattern bindings to get name, type, and other info of a var decl
-        let varmodels = self.bindings.compactMap { (v: PatternBindingSyntax) -> Model in
+        return self.bindings.compactMap { (v: PatternBindingSyntax) in
             let name = v.pattern.firstToken(viewMode: .sourceAccurate)?.text ?? String.unknownVal
             var typeName = ""
             var potentialInitParam = false
@@ -425,11 +427,11 @@ extension VariableDeclSyntax {
                 typeName = vtype
             }
 
-            let storageType: VariableModel.MockStorageType
+            let storageKind: VariableModel.MockStorageKind
             switch v.accessorBlock?.accessors {
             case .accessors(let accessorDecls):
                 if accessorDecls.contains(where: { $0.accessorSpecifier.tokenKind == .keyword(.set) }) {
-                    storageType = .stored(needsSetCount: true)
+                    storageKind = .stored(needsSetCount: true)
                 } else if let getterDecl = accessorDecls.first(where: { $0.accessorSpecifier.tokenKind == .keyword(.get) }) {
                     if getterDecl.body == nil { // is protoccol
                         var getterEffects = VariableModel.GetterEffects.empty
@@ -440,51 +442,49 @@ extension VariableDeclSyntax {
                             getterEffects.throwing = .init(`throws`)
                         }
                         if getterEffects == .empty {
-                            storageType = .stored(needsSetCount: false)
+                            storageKind = .stored(needsSetCount: false)
                         } else {
-                            storageType = .computed(getterEffects)
+                            storageKind = .computed(getterEffects)
                         }
                     } else { // is class
-                        storageType = .computed(.empty)
+                        storageKind = .computed(.empty)
                     }
                 } else {
                     // will never happens
-                    storageType = .stored(needsSetCount: false) // fallback
+                    storageKind = .stored(needsSetCount: false) // fallback
                 }
             case .getter:
-                storageType = .computed(.empty)
+                storageKind = .computed(.empty)
             case nil:
-                storageType = .stored(needsSetCount: true)
+                storageKind = .stored(needsSetCount: true)
             }
 
-            let varmodel = VariableModel(name: name,
-                                         typeName: typeName,
-                                         acl: acl,
-                                         encloserType: declType,
-                                         isStatic: isStatic,
-                                         storageType: storageType,
-                                         canBeInitParam: potentialInitParam,
-                                         offset: v.offset,
-                                         rxTypes: metadata?.varTypes,
-                                         customModifiers: metadata?.modifiers,
-                                         modelDescription: self.description,
-                                         combineType: metadata?.combineTypes?[name] ?? metadata?.combineTypes?["all"],
-                                         processed: processed)
-            return varmodel
+            return VariableModel(name: name,
+                                 typeName: typeName,
+                                 acl: acl,
+                                 encloserType: declType,
+                                 isStatic: isStatic,
+                                 storageKind: storageKind,
+                                 canBeInitParam: potentialInitParam,
+                                 offset: v.offset,
+                                 rxTypes: metadata?.varTypes,
+                                 customModifiers: metadata?.modifiers,
+                                 modelDescription: self.description,
+                                 combineType: metadata?.combineTypes?[name] ?? metadata?.combineTypes?["all"],
+                                 processed: processed)
         }
-        return varmodels
     }
 }
 
 extension SubscriptDeclSyntax {
-    func model(with acl: String, declType: DeclType, processed: Bool) -> Model {
+    func model(with acl: String, declType: DeclType, processed: Bool) -> MethodModel {
         let isStatic = self.modifiers.isStatic
 
         let params = self.parameterClause.parameters.compactMap { $0.model(inInit: false, declType: declType) }
         let genericTypeParams = self.genericParameterClause?.parameters.compactMap { $0.model(inInit: false) } ?? []
         let genericWhereClause = self.genericWhereClause?.description
 
-        let subscriptModel = MethodModel(name: self.subscriptKeyword.text,
+        return MethodModel(name: self.subscriptKeyword.text,
                                          typeName: self.returnClause.type.description,
                                          kind: .subscriptKind,
                                          encloserType: declType,
@@ -501,20 +501,19 @@ extension SubscriptDeclSyntax {
                                          customModifiers: [:],
                                          modelDescription: self.description,
                                          processed: processed)
-        return subscriptModel
     }
 }
 
 extension FunctionDeclSyntax {
 
-    func model(with acl: String, declType: DeclType, funcsWithArgsHistory: [String]?, customModifiers: [String : Modifier]?, processed: Bool) -> Model {
+    func model(with acl: String, declType: DeclType, funcsWithArgsHistory: [String]?, customModifiers: [String : Modifier]?, processed: Bool) -> MethodModel {
         let isStatic = self.modifiers.isStatic
 
         let params = self.signature.parameterClause.parameters.compactMap { $0.model(inInit: false, declType: declType) }
         let genericTypeParams = self.genericParameterClause?.parameters.compactMap { $0.model(inInit: false) } ?? []
         let genericWhereClause = self.genericWhereClause?.description
 
-        let funcmodel = MethodModel(name: self.name.description,
+        return MethodModel(name: self.name.description,
                                     typeName: self.signature.returnClause?.type.description ?? "",
                                     kind: .funcKind,
                                     encloserType: declType,
@@ -531,7 +530,6 @@ extension FunctionDeclSyntax {
                                     customModifiers: customModifiers ?? [:],
                                     modelDescription: self.description,
                                     processed: processed)
-        return funcmodel
     }
 }
 
@@ -548,7 +546,7 @@ extension InitializerDeclSyntax {
         return false
     }
 
-    func model(with acl: String, declType: DeclType, processed: Bool) -> Model {
+    func model(with acl: String, declType: DeclType, processed: Bool) -> any Model {
         let requiredInit = isRequired(with: declType)
 
         let params = self.signature.parameterClause.parameters.compactMap { $0.model(inInit: true, declType: declType) }
@@ -628,7 +626,7 @@ extension FunctionParameterSyntax {
 }
 
 extension AssociatedTypeDeclSyntax {
-    func model(with acl: String, declType: DeclType, overrides: [String: String]?, processed: Bool) -> Model {
+    func model(with acl: String, declType: DeclType, overrides: [String: String]?, processed: Bool) -> TypeAliasModel {
         // Get the inhertied type for an associated type if any
         var t = self.inheritanceClause?.typesDescription ?? ""
         t.append(self.genericWhereClause?.description ?? "")
@@ -646,7 +644,7 @@ extension AssociatedTypeDeclSyntax {
 }
 
 extension TypeAliasDeclSyntax {
-    func model(with acl: String, declType: DeclType, overrides: [String: String]?, processed: Bool) -> Model {
+    func model(with acl: String, declType: DeclType, overrides: [String: String]?, processed: Bool) -> TypeAliasModel {
         return TypeAliasModel(name: self.name.text,
                               typeName: self.initializer.value.description,
                               acl: acl,
@@ -734,18 +732,9 @@ final class EntityVisitor: SyntaxVisitor {
             if let list = cl.elements?.as(CodeBlockItemListSyntax.self) {
                 for el in list {
                     if let importItem = el.item.as(ImportDeclSyntax.self) {
-                        let key = macroName
-                        if imports[key] == nil {
-                            imports[key] = []
-                        }
-                        imports[key]?.append(importItem.trimmedDescription)
-
+                        imports[macroName, default: []].append(importItem.trimmedDescription)
                     } else if let nested = el.item.as(IfConfigDeclSyntax.self) {
-                        let key = macroName
-                        if imports[key] == nil {
-                            imports[key] = []
-                        }
-                        imports[key]?.append(nested.trimmedDescription)
+                        imports[macroName, default: []].append(nested.trimmedDescription)
                     } else {
                         return .visitChildren
                     }

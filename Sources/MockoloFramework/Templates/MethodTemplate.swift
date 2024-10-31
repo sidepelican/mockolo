@@ -20,7 +20,7 @@ extension MethodModel {
     func applyMethodTemplate(name: String,
                              identifier: String,
                              kind: MethodKind,
-                             generationArguments: GenerationArguments,
+                             arguments: GenerationArguments,
                              isStatic: Bool,
                              customModifiers: [String: Modifier]?,
                              isOverride: Bool,
@@ -30,19 +30,18 @@ extension MethodModel {
                              returnType: SwiftType,
                              accessLevel: String,
                              argsHistory: ArgumentsHistoryModel?,
-                             handler: ClosureModel?) -> String {
-        var template = ""
-
+                             handler: ClosureModel?,
+                             context: MemberRenderContext) -> String {
         let returnTypeName = returnType.isUnknown ? "" : returnType.typeName
 
         let acl = accessLevel.isEmpty ? "" : accessLevel+" "
-        let genericTypeDeclsStr = genericTypeParams.compactMap {$0.render(with: "", encloser: "")}.joined(separator: ", ")
+        let genericTypeDeclsStr = genericTypeParams.compactMap {$0.render(with: "")}.joined(separator: ", ")
         let genericTypesStr = genericTypeDeclsStr.isEmpty ? "" : "<\(genericTypeDeclsStr)>"
         var genericWhereStr = ""
         if let clause = genericWhereClause {
             genericWhereStr = " \(clause)"
         }
-        let paramDeclsStr = params.compactMap{$0.render(with: "", encloser: "")}.joined(separator: ", ")
+        let paramDeclsStr = params.compactMap{$0.render(with: "")}.joined(separator: ", ")
 
         switch kind {
         case .initKind(_, _):  // ClassTemplate needs to handle this as it needs a context of all the vars
@@ -53,8 +52,8 @@ extension MethodModel {
 
             let callCount = "\(identifier)\(String.callCountSuffix)"
             let handlerVarName = "\(identifier)\(String.handlerSuffix)"
-            let handlerVarType = handler.type.typeName // ?? "Any"
-            let handlerReturn = handler.render(with: identifier, encloser: "") ?? ""
+            let handlerVarType = handler.type(context: context).typeName // ?? "Any"
+            let handlerReturn = handler.render(with: identifier, context: context) ?? ""
 
             let suffixStr = applyFunctionSuffixTemplate(
                 isAsync: isAsync,
@@ -65,8 +64,8 @@ extension MethodModel {
             let keyword = isSubscript ? "" : "func "
             var body = ""
 
-            if generationArguments.useTemplateFunc {
-                let callMockFunc = !throwing.hasError && (handler.type.cast?.isEmpty ?? false)
+            if arguments.useTemplateFunc {
+                let callMockFunc = !throwing.hasError && (handler.type(context: context).cast?.isEmpty ?? false)
                 if callMockFunc {
                     let handlerParamValsStr = params.map { (arg) -> String in
                         if arg.type.typeName.hasPrefix(String.autoclosure) {
@@ -95,8 +94,8 @@ extension MethodModel {
                 \(2.tab)\(callCount) += 1
                 """
 
-                if let argsHistory = argsHistory, argsHistory.enable(force: generationArguments.enableFuncArgsHistory) {
-                    let argsHistoryCapture = argsHistory.render(with: identifier, encloser: "", generationArguments: generationArguments) ?? ""
+                if let argsHistory = argsHistory, argsHistory.enable(force: arguments.enableFuncArgsHistory) {
+                    let argsHistoryCapture = argsHistory.render(with: identifier, context: context, arguments: arguments) ?? ""
 
                     body = """
                     \(body)
@@ -128,14 +127,14 @@ extension MethodModel {
             } else {
                 modifierTypeStr = ""
             }
-            let privateSetSpace = generationArguments.allowSetCallCount ? "" : "\(String.privateSet) "
+            let privateSetSpace = arguments.allowSetCallCount ? "" : "\(String.privateSet) "
 
-            template = """
+            var template = """
 
             \(1.tab)\(acl)\(staticStr)\(privateSetSpace)var \(callCount) = 0
             """
 
-            if let argsHistory = argsHistory, argsHistory.enable(force: generationArguments.enableFuncArgsHistory) {
+            if let argsHistory = argsHistory, argsHistory.enable(force: arguments.enableFuncArgsHistory) {
                 let argsHistoryVarName = "\(identifier)\(String.argsHistorySuffix)"
                 let argsHistoryVarType = argsHistory.type.typeName
 
@@ -145,7 +144,7 @@ extension MethodModel {
                 """
             }
 
-            template = """
+            return """
             \(template)
             \(1.tab)\(acl)\(staticStr)var \(handlerVarName): \(handlerVarType)
             \(1.tab)\(acl)\(staticStr)\(overrideStr)\(modifierTypeStr)\(keyword)\(name)\(genericTypesStr)(\(paramDeclsStr)) \(suffixStr)\(returnStr)\(genericWhereStr) {
@@ -153,7 +152,5 @@ extension MethodModel {
             \(1.tab)}
             """
         }
-
-        return template
     }
 }

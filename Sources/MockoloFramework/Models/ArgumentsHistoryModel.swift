@@ -35,10 +35,10 @@ final class ArgumentsHistoryModel: Model {
     
     func render(
         with identifier: String,
-        encloser: String,
-        generationArguments: GenerationArguments
+        context: MemberRenderContext,
+        arguments: GenerationArguments
     ) -> String? {
-        guard enable(force: generationArguments.enableFuncArgsHistory) else {
+        guard enable(force: arguments.enableFuncArgsHistory) else {
             return nil
         }
         

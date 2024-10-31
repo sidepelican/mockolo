@@ -31,7 +31,7 @@ final class NominalModel: Model {
     let identifier: String
     let declTypeOfMockAnnotatedBaseType: DeclType
     let inheritedTypes: [String]
-    let entities: [(String, Model)]
+    let entities: [(String, any Model)]
     let initParamCandidates: [VariableModel]
     let declaredInits: [MethodModel]
     let metadata: AnnotationMetadata?
@@ -52,8 +52,8 @@ final class NominalModel: Model {
          metadata: AnnotationMetadata?,
          initParamCandidates: [VariableModel],
          declaredInits: [MethodModel],
-         entities: [(String, Model)]) {
-        self.identifier = identifier 
+         entities: [(String, any Model)]) {
+        self.identifier = identifier
         self.name = metadata?.nameOverride ?? (identifier + "Mock")
         self.type = SwiftType(self.name)
         self.namespaces = namespaces
@@ -71,8 +71,8 @@ final class NominalModel: Model {
     
     func render(
         with identifier: String,
-        encloser: String,
-        generationArguments: GenerationArguments
+        context: Void,
+        arguments: GenerationArguments
     ) -> String? {
         return applyNominalTemplate(
             name: name,
@@ -82,7 +82,7 @@ final class NominalModel: Model {
             declTypeOfMockAnnotatedBaseType: declTypeOfMockAnnotatedBaseType,
             inheritedTypes: inheritedTypes,
             metadata: metadata,
-            generationArguments: generationArguments,
+            arguments: arguments,
             initParamCandidates: initParamCandidates,
             declaredInits: declaredInits,
             entities: entities

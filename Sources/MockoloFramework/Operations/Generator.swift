@@ -141,7 +141,7 @@ public func generate(sourceDirs: [String],
     log("Render models with templates...", level: .info)
     renderTemplates(
         entities: resolvedEntities,
-        generationArguments: .init(
+        arguments: .init(
             useTemplateFunc: useTemplateFunc,
             useMockObservable: useMockObservable,
             allowSetCallCount: allowSetCallCount,

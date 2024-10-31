@@ -27,8 +27,13 @@ public enum ModelType {
     case closure
 }
 
+struct MemberRenderContext {
+    var enclosingType: SwiftType
+}
+
 /// Represents a model for an entity such as var, func, class, etc.
-protocol Model {
+protocol Model<RenderContext> {
+    associatedtype RenderContext = Void
     /// Identifier
     var name: String { get set }
 
@@ -49,15 +54,15 @@ protocol Model {
     var isStatic: Bool { get }
 
     /// Decl(e.g. class/struct/protocol/enum) or return type (e.g. var/func)
-    var type: SwiftType { get set }
+    var type: SwiftType { get }
 
     /// Offset where this type is declared
     var offset: Int64 { get set }
 
     /// Applies a corresponding template to this model to output mocks
     func render(with identifier: String,
-                encloser: String,
-                generationArguments: GenerationArguments
+                context: RenderContext,
+                arguments: GenerationArguments
     ) -> String?
 
     /// Used to differentiate multiple entities with the same name
@@ -66,19 +71,19 @@ protocol Model {
     func name(by level: Int) -> String
 
 
-    func isEqual(_ other: Model) -> Bool
+    func isEqual(_ other: any Model) -> Bool
 
-    func isLessThan(_ other: Model) -> Bool
+    func isLessThan(_ other: any Model) -> Bool
 }
 
 extension Model {
-    func isEqual(_ other: Model) -> Bool {
+    func isEqual(_ other: any Model) -> Bool {
         return self.fullName == other.fullName &&
             self.type.typeName == other.type.typeName &&
             self.modelType == other.modelType
     }
 
-    func isLessThan(_ other: Model) -> Bool {
+    func isLessThan(_ other: any Model) -> Bool {
         if self.offset == other.offset {
             return self.name < other.name
         }
@@ -109,4 +114,3 @@ extension Model {
         return false
     }
 }
-

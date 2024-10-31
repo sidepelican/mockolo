@@ -7,7 +7,7 @@ final class VariableModel: Model {
         static let empty: GetterEffects = .init(isAsync: false, throwing: .none)
     }
 
-    enum MockStorageType {
+    enum MockStorageKind {
         case stored(needsSetCount: Bool)
         case computed(GetterEffects)
     }
@@ -24,7 +24,7 @@ final class VariableModel: Model {
     var filePath: String = ""
     var isStatic = false
     var shouldOverride = false
-    let storageType: MockStorageType
+    let storageKind: MockStorageKind
     var rxTypes: [String: String]?
     var customModifiers: [String: Modifier]?
     var modelDescription: String? = nil
@@ -52,7 +52,7 @@ final class VariableModel: Model {
          acl: String?,
          encloserType: DeclType,
          isStatic: Bool,
-         storageType: MockStorageType,
+         storageKind: MockStorageKind,
          canBeInitParam: Bool,
          offset: Int64,
          rxTypes: [String: String]?,
@@ -64,7 +64,7 @@ final class VariableModel: Model {
         self.type = SwiftType(typeName.trimmingCharacters(in: .whitespaces))
         self.offset = offset
         self.isStatic = isStatic
-        self.storageType = storageType
+        self.storageKind = storageKind
         self.shouldOverride = encloserType == .classType
         self.canBeInitParam = canBeInitParam
         self.processed = processed
@@ -79,8 +79,8 @@ final class VariableModel: Model {
 
     func render(
         with identifier: String,
-        encloser: String,
-        generationArguments: GenerationArguments
+        context: MemberRenderContext,
+        arguments: GenerationArguments
     ) -> String? {
         if processed {
             guard let modelDescription = modelDescription?.trimmingCharacters(in: .newlines), !modelDescription.isEmpty else {
@@ -98,24 +98,24 @@ final class VariableModel: Model {
             return prefix + modelDescription
         }
 
-        if !generationArguments.disableCombineDefaultValues {
+        if !arguments.disableCombineDefaultValues {
             if let combineVar = applyCombineVariableTemplate(name: identifier,
-                                                            type: type,
-                                                            encloser: encloser,
-                                                            shouldOverride: shouldOverride,
-                                                            isStatic: isStatic,
-                                                            accessLevel: accessLevel) {
+                                                             type: type,
+                                                             encloser: context.enclosingType.typeName,
+                                                             shouldOverride: shouldOverride,
+                                                             isStatic: isStatic,
+                                                             accessLevel: accessLevel) {
                 return combineVar
             }
         }
 
         if let rxVar = applyRxVariableTemplate(name: identifier,
                                                type: type,
-                                               encloser: encloser,
+                                               encloser: context.enclosingType.typeName,
                                                rxTypes: rxTypes,
                                                shouldOverride: shouldOverride,
-                                               useMockObservable: generationArguments.useMockObservable,
-                                               allowSetCallCount: generationArguments.allowSetCallCount,
+                                               useMockObservable: arguments.useMockObservable,
+                                               allowSetCallCount: arguments.allowSetCallCount,
                                                isStatic: isStatic,
                                                accessLevel: accessLevel) {
             return rxVar
@@ -123,11 +123,12 @@ final class VariableModel: Model {
 
         return applyVariableTemplate(name: identifier,
                                      type: type,
-                                     encloser: encloser,
+                                     encloser: context.enclosingType.typeName,
                                      isStatic: isStatic,
                                      customModifiers: customModifiers,
-                                     allowSetCallCount: generationArguments.allowSetCallCount,
+                                     allowSetCallCount: arguments.allowSetCallCount,
                                      shouldOverride: shouldOverride,
-                                     accessLevel: accessLevel)
+                                     accessLevel: accessLevel,
+                                     context: context)
     }
 }

@@ -24,17 +24,17 @@ extension NominalModel {
                               declTypeOfMockAnnotatedBaseType: DeclType,
                               inheritedTypes: [String],
                               metadata: AnnotationMetadata?,
-                              generationArguments: GenerationArguments,
+                              arguments: GenerationArguments,
                               initParamCandidates: [VariableModel],
                               declaredInits: [MethodModel],
-                              entities: [(String, Model)]) -> String {
+                              entities: [(String, any Model)]) -> String {
 
         processCombineAliases(entities: entities)
         
         let acl = accessLevel.isEmpty ? "" : accessLevel + " "
         let typealiases = typealiasWhitelist(in: entities)
         let renderedEntities = entities
-            .compactMap { (uniqueId: String, model: Model) -> (String, Int64)? in
+            .compactMap { (uniqueId: String, model: any Model) -> (String, Int64)? in
                 if model.modelType == .typeAlias, let _ = typealiases?[model.name] {
                     // this case will be handlded by typealiasWhitelist look up later
                     return nil
@@ -45,8 +45,24 @@ extension NominalModel {
                 if model.modelType == .method, model.isInitializer, !model.processed {
                     return nil
                 }
-                if let ret = model.render(with: uniqueId, encloser: name, generationArguments: generationArguments) {
-                    return (ret, model.offset)
+                if let model = model as? any Model<MemberRenderContext> {
+                    if let ret = model.render(
+                        with: uniqueId,
+                        context: MemberRenderContext(
+                            enclosingType: type
+                        ),
+                        arguments: arguments
+                    ) {
+                        return (ret, model.offset)
+                    }
+                } else if let model = model as? any Model<Void> {
+                    if let ret = model.render(
+                        with: uniqueId,
+                        context: (),
+                        arguments: arguments
+                    ) {
+                        return (ret, model.offset)
+                    }
                 }
                 return nil
         }
@@ -89,7 +105,7 @@ extension NominalModel {
             body += "\(renderedEntities)"
         }
 
-        let finalStr = generationArguments.mockFinal ? "\(String.final) " : ""
+        let finalStr = arguments.mockFinal ? "\(String.final) " : ""
         let template = """
         \(attribute)
         \(acl)\(finalStr)\(declKind.rawValue) \(name): \(inheritedTypes.joined(separator: ", ")) {
@@ -165,7 +181,7 @@ extension NominalModel {
                 .joined(separator: ", ")
 
             paramsAssign = initParamCandidates.map { (element: VariableModel) in
-                switch element.storageType {
+                switch element.storageKind {
                 case .stored:
                     return "\(2.tab)self.\(element.underlyingName) = \(element.name.safeName)"
                 case .computed:
@@ -198,9 +214,9 @@ extension NominalModel {
             if case let .initKind(required, override) = m.kind, !m.processed {
                 let modifier = required ? "\(String.required) " : (override ? "\(String.override) " : "")
                 let mAcl = m.accessLevel.isEmpty ? "" : "\(m.accessLevel) "
-                let genericTypeDeclsStr = m.genericTypeParams.compactMap {$0.render(with: "", encloser: "")}.joined(separator: ", ")
+                let genericTypeDeclsStr = m.genericTypeParams.compactMap {$0.render(with: "")}.joined(separator: ", ")
                 let genericTypesStr = genericTypeDeclsStr.isEmpty ? "" : "<\(genericTypeDeclsStr)>"
-                let paramDeclsStr = m.params.compactMap{$0.render(with: "", encloser: "")}.joined(separator: ", ")
+                let paramDeclsStr = m.params.compactMap{$0.render(with: "")}.joined(separator: ", ")
                 let suffixStr = applyFunctionSuffixTemplate(
                     isAsync: m.isAsync,
                     throwing: m.throwing
@@ -264,7 +280,7 @@ extension NominalModel {
     /// Returns a map of typealiases with conflicting types to be whitelisted
     /// @param models Potentially contains typealias models
     /// @returns A map of typealiases with multiple possible types
-    func typealiasWhitelist(`in` models: [(String, Model)]) -> [String: [String]]? {
+    func typealiasWhitelist(`in` models: [(String, any Model)]) -> [String: [String]]? {
         let typealiasModels = models.filter{$0.1.modelType == .typeAlias}
         var aliasMap = [String: [String]]()
         typealiasModels.forEach { (arg: (key: String, value: Model)) in
@@ -285,7 +301,7 @@ extension NominalModel {
     // Finds all combine properties that are attempting to use a property wrapper alias
     // and locates the matching property within the class, if one exists.
     //
-    private func processCombineAliases(entities: [(String, Model)]) {
+    private func processCombineAliases(entities: [(String, any Model)]) {
         var variableModels = [VariableModel]()
         var nameToVariableModels = [String: VariableModel]()
 

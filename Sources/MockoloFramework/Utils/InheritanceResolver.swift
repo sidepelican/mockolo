@@ -27,12 +27,12 @@ import Foundation
 func lookupEntities(key: String,
                     declType: DeclType,
                     protocolMap: [String: Entity],
-                    inheritanceMap: [String: Entity]) -> ([Model], [Model], [String], Set<String>, [String], [(String, Data, Int64)]) {
+                    inheritanceMap: [String: Entity]) -> ([any Model], [any Model], [String], Set<String>, [String], [(String, Data, Int64)]) {
 
     // Used to keep track of types to be mocked
-    var models = [Model]()
+    var models = [any Model]()
     // Used to keep track of types that were already mocked
-    var processedModels = [Model]()
+    var processedModels = [any Model]()
     // Gather attributes declared in current or parent protocols
     var attributes = [String]()
     // Gather inherited types declared in current or parent protocols
@@ -89,24 +89,24 @@ func lookupEntities(key: String,
 /// @param fullNameVisited Used to look up an entity full name to detect true duplicates (e.g.
 ///        overloaded functions in multiple parent protocols)
 /// @returns a dictionary with unique entity names and corresponding models
-private func uniquifyDuplicates(group: [String: [Model]],
+private func uniquifyDuplicates(group: [String: [any Model]],
                                 level: Int,
-                                nameByLevelVisited: [String: Model]?,
-                                fullNameVisited: [String]) -> [String: Model] {
+                                nameByLevelVisited: [String: any Model]?,
+                                fullNameVisited: [String]) -> [String: any Model] {
     
-    var bufferNameByLevelVisited = [String: Model]()
+    var bufferNameByLevelVisited = [String: any Model]()
     var bufferFullNameVisited = [String]()
     group.forEach { (key: String, models: [Model]) in
         if let nameByLevelVisited = nameByLevelVisited, nameByLevelVisited[key] != nil {
             // An entity with the given key already exists, so look up a more verbose name for these entities
-            let subgroup = Dictionary(grouping: models, by: { (modelElement: Model) -> String in
+            let subgroup = Dictionary(grouping: models, by: { (modelElement: (any Model)) -> String in
                 return modelElement.name(by: level + 1)
             })
             if !fullNameVisited.isEmpty {
                 bufferFullNameVisited.append(contentsOf: fullNameVisited)
             }
             let subresult = uniquifyDuplicates(group: subgroup, level: level+1, nameByLevelVisited: bufferNameByLevelVisited, fullNameVisited: bufferFullNameVisited)
-            bufferNameByLevelVisited.merge(subresult, uniquingKeysWith: { (bufferElement: Model, subresultElement: Model) -> Model in
+            bufferNameByLevelVisited.merge(subresult, uniquingKeysWith: { (bufferElement: Model, subresultElement: Model) -> (any Model) in
                 return subresultElement
             })
         } else {
@@ -125,13 +125,13 @@ private func uniquifyDuplicates(group: [String: [Model]],
                 // a buffer and use a more verbose name key for the rest to differentiate them
                 bufferNameByLevelVisited[key] = first
                 let nextModels = unvisited[1...]
-                let subgroup = Dictionary(grouping: nextModels, by: { (modelElement: Model) -> String in
+                let subgroup = Dictionary(grouping: nextModels, by: { (modelElement: (any Model)) -> String in
                     let distinctName = modelElement.name(by: level + 1)
                     return distinctName
                 })
                 
                 let subresult = uniquifyDuplicates(group: subgroup, level: level+1, nameByLevelVisited: bufferNameByLevelVisited, fullNameVisited: bufferFullNameVisited)
-                bufferNameByLevelVisited.merge(subresult, uniquingKeysWith: { (bufferElement: Model, addedElement: Model) -> Model in
+                bufferNameByLevelVisited.merge(subresult, uniquingKeysWith: { (bufferElement: Model, addedElement: Model) -> (any Model) in
                     return addedElement
                 })
             }
@@ -145,7 +145,7 @@ private func uniquifyDuplicates(group: [String: [Model]],
 /// @param exclude The models that are used for lookup only
 /// @param fullnames Used to look up full identifiers
 /// @returns A map of unique models
-func uniqueEntities(`in` models: [Model], exclude: [String: Model], fullnames: [String]) -> [String: Model] {
+func uniqueEntities(`in` models: [any Model], exclude: [String: any Model], fullnames: [String]) -> [String: any Model] {
     return uniquifyDuplicates(group: Dictionary(grouping: models) { $0.name(by: 0) }, level: 0, nameByLevelVisited: exclude, fullNameVisited: fullnames)
 }
 

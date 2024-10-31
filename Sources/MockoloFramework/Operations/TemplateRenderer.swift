@@ -19,14 +19,14 @@ import Foundation
 /// Renders models with templates for output
 
 func renderTemplates(entities: [ResolvedEntity],
-                     generationArguments: GenerationArguments,
+                     arguments: GenerationArguments,
                      completion: @escaping (String, Int64) -> ()) {
     scan(entities) { (resolvedEntity, lock) in
         let mockModel = resolvedEntity.model()
         if let mockString = mockModel.render(
             with: resolvedEntity.key,
-            encloser: mockModel.name,
-            generationArguments: generationArguments
+            context: (),
+            arguments: arguments
         ), !mockString.isEmpty {
             lock?.lock()
             completion(mockString, mockModel.offset)

@@ -23,6 +23,42 @@ public enum MethodKind: Equatable {
 }
 
 final class MethodModel: Model {
+    init(name: String,
+         typeName: String,
+         kind: MethodKind,
+         encloserType: DeclType,
+         acl: String,
+         genericTypeParams: [ParamModel],
+         genericWhereClause: String?,
+         params: [ParamModel],
+         isAsync: Bool,
+         throwing: ThrowingKind,
+         isStatic: Bool,
+         offset: Int64,
+         length: Int64,
+         funcsWithArgsHistory: [String],
+         customModifiers: [String: Modifier],
+         modelDescription: String?,
+         processed: Bool) {
+        self.name = name.trimmingCharacters(in: .whitespaces)
+        self.type = SwiftType(typeName.trimmingCharacters(in: .whitespaces))
+        self.isAsync = isAsync
+        self.throwing = throwing
+        self.offset = offset
+        self.length = length
+        self.kind = kind
+        self.isStatic = isStatic
+        self.shouldOverride = encloserType == .classType
+        self.params = params
+        self.genericTypeParams = genericTypeParams
+        self.genericWhereClause = genericWhereClause
+        self.processed = processed
+        self.funcsWithArgsHistory = funcsWithArgsHistory
+        self.customModifiers = customModifiers
+        self.modelDescription = modelDescription
+        self.accessLevel = acl
+    }
+
     var filePath: String = ""
     var data: Data? = nil
     var name: String
@@ -140,60 +176,18 @@ final class MethodModel: Model {
         return ret
     }()
 
-    func handler(encloser: String) -> ClosureModel? {
+    func handler() -> ClosureModel? {
         if isInitializer {
             return nil
         }
 
-        let paramNames = self.params.map(\.name)
-        let paramTypes = self.params.map(\.type)
-        let ret = ClosureModel(name: name,
-                               genericTypeParams: genericTypeParams,
-                               paramNames: paramNames,
-                               paramTypes: paramTypes,
-                               isAsync: isAsync,
-                               throwing: throwing,
-                               returnType: type,
-                               encloser: encloser)
-
-        return ret
-    }
-
-
-    init(name: String,
-         typeName: String,
-         kind: MethodKind,
-         encloserType: DeclType,
-         acl: String,
-         genericTypeParams: [ParamModel],
-         genericWhereClause: String?,
-         params: [ParamModel],
-         isAsync: Bool,
-         throwing: ThrowingKind,
-         isStatic: Bool,
-         offset: Int64,
-         length: Int64,
-         funcsWithArgsHistory: [String],
-         customModifiers: [String: Modifier],
-         modelDescription: String?,
-         processed: Bool) {
-        self.name = name.trimmingCharacters(in: .whitespaces)
-        self.type = SwiftType(typeName.trimmingCharacters(in: .whitespaces))
-        self.isAsync = isAsync
-        self.throwing = throwing
-        self.offset = offset
-        self.length = length
-        self.kind = kind
-        self.isStatic = isStatic
-        self.shouldOverride = encloserType == .classType
-        self.params = params
-        self.genericTypeParams = genericTypeParams
-        self.genericWhereClause = genericWhereClause
-        self.processed = processed
-        self.funcsWithArgsHistory = funcsWithArgsHistory
-        self.customModifiers = customModifiers
-        self.modelDescription = modelDescription
-        self.accessLevel = acl
+        return ClosureModel(name: name,
+                            genericTypeParams: genericTypeParams,
+                            paramNames: params.map(\.name),
+                            paramTypes: params.map(\.type),
+                            isAsync: isAsync,
+                            throwing: throwing,
+                            returnType: type)
     }
 
     var fullName: String {
@@ -211,8 +205,8 @@ final class MethodModel: Model {
 
     func render(
         with identifier: String,
-        encloser: String,
-        generationArguments: GenerationArguments
+        context: MemberRenderContext,
+        arguments: GenerationArguments
     ) -> String? {
         if processed {
             var prefix = shouldOverride  ? "\(String.override) " : ""
@@ -229,20 +223,20 @@ final class MethodModel: Model {
             return nil
         }
 
-        let result = applyMethodTemplate(name: name,
-                                         identifier: identifier,
-                                         kind: kind,
-                                         generationArguments: generationArguments,
-                                         isStatic: isStatic,
-                                         customModifiers: customModifiers,
-                                         isOverride: shouldOverride,
-                                         genericTypeParams: genericTypeParams,
-                                         genericWhereClause: genericWhereClause,
-                                         params: params,
-                                         returnType: type,
-                                         accessLevel: accessLevel,
-                                         argsHistory: argsHistory,
-                                         handler: handler(encloser: encloser))
-        return result
+        return applyMethodTemplate(name: name,
+                                   identifier: identifier,
+                                   kind: kind,
+                                   arguments: arguments,
+                                   isStatic: isStatic,
+                                   customModifiers: customModifiers,
+                                   isOverride: shouldOverride,
+                                   genericTypeParams: genericTypeParams,
+                                   genericWhereClause: genericWhereClause,
+                                   params: params,
+                                   returnType: type,
+                                   accessLevel: accessLevel,
+                                   argsHistory: argsHistory,
+                                   handler: handler(),
+                                   context: context)
     }
 }

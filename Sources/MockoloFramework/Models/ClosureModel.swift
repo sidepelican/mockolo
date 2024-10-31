@@ -18,7 +18,10 @@ import Foundation
 
 final class ClosureModel: Model {
     var name: String
-    var type: SwiftType
+    var type: SwiftType {
+        @available(*, unavailable)
+        get { fatalError("ClosureModel cannot define the type itself without context.") }
+    }
     var offset: Int64 = .max
     let funcReturnType: SwiftType
     let genericTypeNames: [String]
@@ -31,33 +34,36 @@ final class ClosureModel: Model {
         return .closure
     }
     
-    init(name: String, genericTypeParams: [ParamModel], paramNames: [String], paramTypes: [SwiftType], isAsync: Bool, throwing: ThrowingKind, returnType: SwiftType, encloser: String) {
+    init(name: String, genericTypeParams: [ParamModel], paramNames: [String], paramTypes: [SwiftType], isAsync: Bool, throwing: ThrowingKind, returnType: SwiftType) {
         // In the mock's call handler, rethrows is unavailable.
         let throwing = throwing.coerceRethrowsToThrows
         self.name = name + .handlerSuffix
         self.isAsync = isAsync
         self.throwing = throwing
-        let genericTypeNameList = genericTypeParams.map(\.name)
-        self.genericTypeNames = genericTypeNameList
+        self.genericTypeNames = genericTypeParams.map(\.name)
         self.paramNames = paramNames
         self.paramTypes = paramTypes
         self.funcReturnType = returnType
-        self.type = SwiftType.toClosureType(
+    }
+
+    func type(context: MemberRenderContext) -> SwiftType {
+        return SwiftType.toClosureType(
             params: paramTypes,
-            typeParams: genericTypeNameList,
+            typeParams: genericTypeNames,
             isAsync: isAsync,
             throwing: throwing,
-            returnType: returnType,
-            encloser: encloser
+            returnType: funcReturnType,
+            encloser: context.enclosingType
         )
     }
-    
+
     func render(
         with identifier: String,
-        encloser: String,
-        generationArguments: GenerationArguments = .default
+        context: MemberRenderContext,
+        arguments: GenerationArguments = .default
     ) -> String? {
-        return applyClosureTemplate(name: identifier + .handlerSuffix,
+        return applyClosureTemplate(type: type(context: context),
+                                    name: identifier + .handlerSuffix,
                                     paramVals: paramNames,
                                     paramTypes: paramTypes,
                                     returnDefaultType: funcReturnType)

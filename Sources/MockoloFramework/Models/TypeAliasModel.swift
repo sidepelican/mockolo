@@ -63,8 +63,8 @@ final class TypeAliasModel: Model {
     
     func render(
         with identifier: String,
-        encloser: String,
-        generationArguments: GenerationArguments
+        context: Void, 
+        arguments: GenerationArguments
     ) -> String? {
         if processed || useDescription, let modelDescription = modelDescription?.trimmingCharacters(in: .whitespacesAndNewlines) {
             if addAcl {

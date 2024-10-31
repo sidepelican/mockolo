@@ -18,14 +18,15 @@ import Foundation
 
 extension IfMacroModel {
     func applyMacroTemplate(name: String,
-                            generationArguments: GenerationArguments,
-                            entities: [Model]) -> String {
+                            context: MemberRenderContext,
+                            arguments: GenerationArguments,
+                            entities: [any Model<MemberRenderContext>]) -> String {
         let rendered = entities
             .compactMap {
                 $0.render(
                     with: $0.name,
-                    encloser: "",
-                    generationArguments: generationArguments
+                    context: context,
+                    arguments: arguments
                 )
             }
             .joined(separator: "\n")

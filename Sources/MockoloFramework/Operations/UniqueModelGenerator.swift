@@ -39,7 +39,7 @@ private func generateUniqueModels(key: String,
 
     let processedFullNames = processedModels.compactMap {$0.fullName}
 
-    let processedElements = processedModels.compactMap { (element: Model) -> (String, Model)? in
+    let processedElements = processedModels.compactMap { (element: (any Model)) -> (String, any Model)? in
         let name = element.name
         if let rng = name.range(of: String.setCallCountSuffix) {
             return (String(name[name.startIndex..<rng.lowerBound]), element)
@@ -50,7 +50,7 @@ private func generateUniqueModels(key: String,
         return nil
     }
     
-    var processedLookup = Dictionary<String, Model>()
+    var processedLookup = Dictionary<String, any Model>()
     processedElements.forEach { (key, val) in processedLookup[key] = val }
     
     let nonMethodModels = models.filter {$0.modelType != .method}
