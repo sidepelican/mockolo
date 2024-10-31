@@ -40,8 +40,6 @@ protocol Model<RenderContext> {
     /// Fully qualified identifier
     var fullName: String { get }
 
-    var underlyingName: String { get }
-
     /// Type of this model
     var modelType: ModelType { get }
 
@@ -64,37 +62,15 @@ protocol Model<RenderContext> {
     /// @param level The verbosity level
     /// @returns a unique name given the verbosity (default is name)
     func name(by level: Int) -> String
-
-
-    func isEqual(_ other: any Model) -> Bool
-
-    func isLessThan(_ other: any Model) -> Bool
 }
 
 extension Model {
-    func isEqual(_ other: any Model) -> Bool {
-        return self.fullName == other.fullName &&
-            self.type.typeName == other.type.typeName &&
-            self.modelType == other.modelType
-    }
-
-    func isLessThan(_ other: any Model) -> Bool {
-        if self.offset == other.offset {
-            return self.name < other.name
-        }
-        return self.offset < other.offset
-    }
-
     func name(by level: Int) -> String {
         return name
     }
 
     var fullName: String {
         return name
-    }
-
-    var underlyingName: String {
-        return name.safeName
     }
 
     var processed: Bool {
