@@ -35,7 +35,7 @@ struct MemberRenderContext {
 protocol Model<RenderContext> {
     associatedtype RenderContext = Void
     /// Identifier
-    var name: String { get set }
+    var name: String { get }
 
     /// Fully qualified identifier
     var fullName: String { get }
@@ -57,7 +57,7 @@ protocol Model<RenderContext> {
     var type: SwiftType { get }
 
     /// Offset where this type is declared
-    var offset: Int64 { get set }
+    var offset: Int64 { get }
 
     /// Applies a corresponding template to this model to output mocks
     func render(with identifier: String,
