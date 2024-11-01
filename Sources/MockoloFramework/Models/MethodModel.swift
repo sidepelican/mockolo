@@ -44,9 +44,6 @@ struct MethodModel: Model {
         return .method
     }
 
-    var filePath: String = ""
-    var data: Data? = nil
-
     private var staticKind: String {
         return isStatic ? .static : ""
     }
@@ -178,7 +175,7 @@ struct MethodModel: Model {
                 }
             }
 
-            if let ret = modelDescription?.trimmingCharacters(in: .newlines) ?? self.data?.toString(offset: offset, length: length) {
+            if let ret = modelDescription?.trimmingCharacters(in: .newlines) {
                 return prefix + ret
             }
             return nil
