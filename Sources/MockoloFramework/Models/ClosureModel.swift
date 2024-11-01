@@ -17,7 +17,7 @@
 import Foundation
 
 final class ClosureModel: Model {
-    var name: String
+    let name: String = "" // closure type cannot have a name
     var offset: Int64 = .max
     let funcReturnType: SwiftType
     let genericTypeNames: [String]
@@ -30,10 +30,9 @@ final class ClosureModel: Model {
         return .closure
     }
     
-    init(name: String, genericTypeParams: [ParamModel], paramNames: [String], paramTypes: [SwiftType], isAsync: Bool, throwing: ThrowingKind, returnType: SwiftType) {
+    init(genericTypeParams: [ParamModel], paramNames: [String], paramTypes: [SwiftType], isAsync: Bool, throwing: ThrowingKind, returnType: SwiftType) {
         // In the mock's call handler, rethrows is unavailable.
         let throwing = throwing.coerceRethrowsToThrows
-        self.name = name
         self.isAsync = isAsync
         self.throwing = throwing
         self.genericTypeNames = genericTypeParams.map(\.name)

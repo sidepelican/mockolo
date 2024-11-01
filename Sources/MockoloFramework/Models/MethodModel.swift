@@ -143,8 +143,7 @@ struct MethodModel: Model {
             return nil
         }
 
-        return ClosureModel(name: name,
-                            genericTypeParams: genericTypeParams,
+        return ClosureModel(genericTypeParams: genericTypeParams,
                             paramNames: params.map(\.name),
                             paramTypes: params.map(\.type),
                             isAsync: isAsync,
