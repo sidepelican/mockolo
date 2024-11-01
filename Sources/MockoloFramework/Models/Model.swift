@@ -33,53 +33,14 @@ enum NominalTypeDeclKind: String {
     case `protocol`
 }
 
-struct MemberRenderContext {
-    var enclosingType: SwiftType
-    var annotatedTypeKind: NominalTypeDeclKind
-}
-
-struct MethodRenderContext {
-    var overloadingResolvedName: String
-    var enclosingType: SwiftType
-    var annotatedTypeKind: NominalTypeDeclKind
-}
-
-func applyGenericRender(
-    _ model: any Model,
-    overloadingResolvedName: String,
-    enclosingType: SwiftType,
-    annotatedTypeKind: NominalTypeDeclKind,
-    arguments: GenerationArguments
-) -> String? {
-    if let model = model as? any Model<MethodRenderContext> {
-        return model.render(
-            context: .init(
-                overloadingResolvedName: overloadingResolvedName,
-                enclosingType: enclosingType,
-                annotatedTypeKind: annotatedTypeKind
-            ),
-            arguments: arguments
-        )
-    } else if let model = model as? any Model<MemberRenderContext> {
-        return model.render(
-            context: .init(
-                enclosingType: enclosingType,
-                annotatedTypeKind: annotatedTypeKind
-            ),
-            arguments: arguments
-        )
-    } else if let model = model as? any Model<Void> {
-        return model.render(
-            context: (),
-            arguments: arguments
-        )
-    }
-    return nil
+struct RenderContext {
+    var overloadingResolvedName: String?
+    var enclosingType: SwiftType?
+    var annotatedTypeKind: NominalTypeDeclKind?
 }
 
 /// Represents a model for an entity such as var, func, class, etc.
-protocol Model<RenderContext> {
-    associatedtype RenderContext = Void
+protocol Model {
     /// Identifier
     var name: String { get }
 

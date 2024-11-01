@@ -26,7 +26,7 @@ extension VariableModel {
                                allowSetCallCount: Bool,
                                shouldOverride: Bool,
                                accessLevel: String,
-                               context: MemberRenderContext) -> String {
+                               context: RenderContext) -> String {
 
         let underlyingSetCallCount = "\(name)\(String.setCallCountSuffix)"
         let underlyingVarDefaultVal = type.defaultVal()

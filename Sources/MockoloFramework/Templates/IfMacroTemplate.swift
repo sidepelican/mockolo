@@ -18,16 +18,17 @@ import Foundation
 
 extension IfMacroModel {
     func applyMacroTemplate(name: String,
-                            context: MemberRenderContext,
+                            context: RenderContext,
                             arguments: GenerationArguments,
                             entities: [any Model]) -> String {
         let rendered = entities
             .compactMap { model in
-                return applyGenericRender(
-                    model,
-                    overloadingResolvedName: model.name, // FIXME: the name is not resolving overload
-                    enclosingType: context.enclosingType,
-                    annotatedTypeKind: context.annotatedTypeKind,
+                model.render(
+                    context: .init(
+                        overloadingResolvedName: model.name, // FIXME: the name is not resolving overload
+                        enclosingType: context.enclosingType,
+                        annotatedTypeKind: context.annotatedTypeKind
+                    ),
                     arguments: arguments
                 )
             }

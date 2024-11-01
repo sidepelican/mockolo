@@ -78,9 +78,12 @@ final class VariableModel: Model {
     }
 
     func render(
-        context: MemberRenderContext,
+        context: RenderContext,
         arguments: GenerationArguments
     ) -> String? {
+        guard let enclosingType = context.enclosingType else {
+            return nil
+        }
         if processed {
             guard let modelDescription = modelDescription?.trimmingCharacters(in: .newlines), !modelDescription.isEmpty else {
                 return nil
@@ -100,7 +103,7 @@ final class VariableModel: Model {
         if !arguments.disableCombineDefaultValues {
             if let combineVar = applyCombineVariableTemplate(name: name,
                                                              type: type,
-                                                             encloser: context.enclosingType.typeName,
+                                                             encloser: enclosingType.typeName,
                                                              shouldOverride: shouldOverride,
                                                              isStatic: isStatic,
                                                              accessLevel: accessLevel) {
@@ -110,7 +113,7 @@ final class VariableModel: Model {
 
         if let rxVar = applyRxVariableTemplate(name: name,
                                                type: type,
-                                               encloser: context.enclosingType.typeName,
+                                               encloser: enclosingType.typeName,
                                                rxTypes: rxTypes,
                                                shouldOverride: shouldOverride,
                                                useMockObservable: arguments.useMockObservable,
@@ -122,7 +125,7 @@ final class VariableModel: Model {
 
         return applyVariableTemplate(name: name,
                                      type: type,
-                                     encloser: context.enclosingType.typeName,
+                                     encloser: enclosingType.typeName,
                                      isStatic: isStatic,
                                      customModifiers: customModifiers,
                                      allowSetCallCount: arguments.allowSetCallCount,

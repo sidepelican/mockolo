@@ -30,7 +30,10 @@ extension MethodModel {
                              accessLevel: String,
                              argsHistory: ArgumentsHistoryModel?,
                              handler: ClosureModel?,
-                             context: MethodRenderContext) -> String {
+                             context: RenderContext) -> String {
+        guard let overloadingResolvedName = context.overloadingResolvedName else {
+            preconditionFailure()
+        }
         let returnTypeName = returnType.isUnknown ? "" : returnType.typeName
 
         let acl = accessLevel.isEmpty ? "" : accessLevel+" "
@@ -49,8 +52,8 @@ extension MethodModel {
 
             guard let handler else { return "" }
 
-            let callCount = "\(context.overloadingResolvedName)\(String.callCountSuffix)"
-            let handlerVarName = "\(context.overloadingResolvedName)\(String.handlerSuffix)"
+            let callCount = "\(overloadingResolvedName)\(String.callCountSuffix)"
+            let handlerVarName = "\(overloadingResolvedName)\(String.handlerSuffix)"
             let handlerVarType = handler.type(context: context).typeName // ?? "Any"
             let handlerReturn = handler.render(context: context) ?? ""
 
@@ -134,7 +137,7 @@ extension MethodModel {
             """
 
             if let argsHistory = argsHistory, argsHistory.enable(force: arguments.enableFuncArgsHistory) {
-                let argsHistoryVarName = "\(context.overloadingResolvedName)\(String.argsHistorySuffix)"
+                let argsHistoryVarName = "\(overloadingResolvedName)\(String.argsHistorySuffix)"
                 let argsHistoryVarType = argsHistory.type.typeName
 
                 template = """

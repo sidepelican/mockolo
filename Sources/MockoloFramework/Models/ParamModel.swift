@@ -89,7 +89,7 @@ final class ParamModel: Model {
     }
     
     func render(
-        context: Void = (),
+        context: RenderContext = .init(),
         arguments: GenerationArguments = .default
     ) -> String? {
         return applyParamTemplate(name: name, label: label, type: type, inInit: inInit)

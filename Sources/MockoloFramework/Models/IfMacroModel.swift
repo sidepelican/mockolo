@@ -38,7 +38,7 @@ final class IfMacroModel: Model {
     }
     
     func render(
-        context: MemberRenderContext,
+        context: RenderContext,
         arguments: GenerationArguments
     ) -> String? {
         return applyMacroTemplate(

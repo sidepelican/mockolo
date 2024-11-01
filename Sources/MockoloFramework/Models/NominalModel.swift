@@ -65,7 +65,7 @@ final class NominalModel: Model {
     }
     
     func render(
-        context: Void,
+        context: RenderContext,
         arguments: GenerationArguments
     ) -> String? {
         return applyNominalTemplate(

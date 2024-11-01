@@ -49,7 +49,7 @@ struct MethodModel: Model {
     }
     
     /// This is used to uniquely identify methods with the same signature and different generic requirements
-    var genericWhereClauseToSignatureComponent: String {
+    private var genericWhereClauseToSignatureComponent: String {
         guard let genericWhereClause else {
             return ""
         }
@@ -162,7 +162,7 @@ struct MethodModel: Model {
     }
 
     func render(
-        context: MethodRenderContext,
+        context: RenderContext,
         arguments: GenerationArguments
     ) -> String? {
         let shouldOverride = context.annotatedTypeKind == .class

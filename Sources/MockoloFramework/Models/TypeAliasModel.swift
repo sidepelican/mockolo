@@ -62,7 +62,7 @@ final class TypeAliasModel: Model {
     }
     
     func render(
-        context: Void, 
+        context: RenderContext, 
         arguments: GenerationArguments
     ) -> String? {
         if processed || useDescription, let modelDescription = modelDescription?.trimmingCharacters(in: .whitespacesAndNewlines) {

@@ -44,11 +44,12 @@ extension NominalModel {
                 if model.modelType == .method, let model = model as? MethodModel, model.isInitializer, !model.processed {
                     return nil
                 }
-                if let ret = applyGenericRender(
-                    model,
-                    overloadingResolvedName: uniqueId,
-                    enclosingType: type,
-                    annotatedTypeKind: declKindOfMockAnnotatedBaseType,
+                if let ret = model.render(
+                    context: .init(
+                        overloadingResolvedName: uniqueId,
+                        enclosingType: type,
+                        annotatedTypeKind: declKindOfMockAnnotatedBaseType
+                    ),
                     arguments: arguments
                 ) {
                     return (ret, model.offset)
