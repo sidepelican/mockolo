@@ -78,7 +78,6 @@ final class VariableModel: Model {
     }
 
     func render(
-        with identifier: String,
         context: MemberRenderContext,
         arguments: GenerationArguments
     ) -> String? {
@@ -99,7 +98,7 @@ final class VariableModel: Model {
         }
 
         if !arguments.disableCombineDefaultValues {
-            if let combineVar = applyCombineVariableTemplate(name: identifier,
+            if let combineVar = applyCombineVariableTemplate(name: name,
                                                              type: type,
                                                              encloser: context.enclosingType.typeName,
                                                              shouldOverride: shouldOverride,
@@ -109,7 +108,7 @@ final class VariableModel: Model {
             }
         }
 
-        if let rxVar = applyRxVariableTemplate(name: identifier,
+        if let rxVar = applyRxVariableTemplate(name: name,
                                                type: type,
                                                encloser: context.enclosingType.typeName,
                                                rxTypes: rxTypes,
@@ -121,7 +120,7 @@ final class VariableModel: Model {
             return rxVar
         }
 
-        return applyVariableTemplate(name: identifier,
+        return applyVariableTemplate(name: name,
                                      type: type,
                                      encloser: context.enclosingType.typeName,
                                      isStatic: isStatic,

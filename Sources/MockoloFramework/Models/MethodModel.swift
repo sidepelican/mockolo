@@ -166,8 +166,7 @@ struct MethodModel: Model {
     }
 
     func render(
-        with identifier: String,
-        context: MemberRenderContext,
+        context: MethodRenderContext,
         arguments: GenerationArguments
     ) -> String? {
         let shouldOverride = context.annotatedTypeKind == .class
@@ -187,7 +186,6 @@ struct MethodModel: Model {
         }
 
         return applyMethodTemplate(name: name,
-                                   identifier: identifier,
                                    kind: kind,
                                    arguments: arguments,
                                    isStatic: isStatic,

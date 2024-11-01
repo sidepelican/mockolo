@@ -38,6 +38,45 @@ struct MemberRenderContext {
     var annotatedTypeKind: NominalTypeDeclKind
 }
 
+struct MethodRenderContext {
+    var overloadingResolvedName: String
+    var enclosingType: SwiftType
+    var annotatedTypeKind: NominalTypeDeclKind
+}
+
+func applyGenericRender(
+    _ model: any Model,
+    overloadingResolvedName: String,
+    enclosingType: SwiftType,
+    annotatedTypeKind: NominalTypeDeclKind,
+    arguments: GenerationArguments
+) -> String? {
+    if let model = model as? any Model<MethodRenderContext> {
+        return model.render(
+            context: .init(
+                overloadingResolvedName: overloadingResolvedName,
+                enclosingType: enclosingType,
+                annotatedTypeKind: annotatedTypeKind
+            ),
+            arguments: arguments
+        )
+    } else if let model = model as? any Model<MemberRenderContext> {
+        return model.render(
+            context: .init(
+                enclosingType: enclosingType,
+                annotatedTypeKind: annotatedTypeKind
+            ),
+            arguments: arguments
+        )
+    } else if let model = model as? any Model<Void> {
+        return model.render(
+            context: (),
+            arguments: arguments
+        )
+    }
+    return nil
+}
+
 /// Represents a model for an entity such as var, func, class, etc.
 protocol Model<RenderContext> {
     associatedtype RenderContext = Void
@@ -57,9 +96,9 @@ protocol Model<RenderContext> {
     var offset: Int64 { get }
 
     /// Applies a corresponding template to this model to output mocks
-    func render(with identifier: String,
-                context: RenderContext,
-                arguments: GenerationArguments
+    func render(
+        context: RenderContext,
+        arguments: GenerationArguments
     ) -> String?
 
     /// Used to differentiate multiple entities with the same name

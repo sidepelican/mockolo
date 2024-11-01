@@ -19,7 +19,7 @@ import Foundation
 final class IfMacroModel: Model {
     var name: String
     var offset: Int64
-    let entities: [any Model<MemberRenderContext>]
+    let entities: [any Model]
 
     var modelType: ModelType {
         return .macro
@@ -31,14 +31,13 @@ final class IfMacroModel: Model {
     
     init(name: String,
          offset: Int64,
-         entities: [any Model<MemberRenderContext>]) {
+         entities: [any Model]) {
         self.name = name
         self.entities = entities
         self.offset = offset
     }
     
     func render(
-        with identifier: String,
         context: MemberRenderContext,
         arguments: GenerationArguments
     ) -> String? {

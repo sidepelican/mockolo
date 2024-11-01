@@ -231,7 +231,7 @@ extension MemberBlockItemListSyntax {
 
 extension IfConfigDeclSyntax {
     func model(with encloserAcl: String, declType: FindTargetDeclType, metadata: AnnotationMetadata?, processed: Bool) -> (any Model, String?, Bool) {
-        var subModels = [any Model<MemberRenderContext>]()
+        var subModels = [any Model]()
         var attrDesc: String?
         var hasInit = false
 
@@ -242,9 +242,7 @@ extension IfConfigDeclSyntax {
                     name = desc
                     for element in list {
                         if let (item, attr, initFlag) = element.transformToModel(with: encloserAcl, declType: declType, metadata: metadata, processed: processed) {
-                            if let item = item as? any Model<MemberRenderContext> {
-                                subModels.append(item)
-                            }
+                            subModels.append(item)
                             if let attr = attr, attr.contains(String.available) {
                                 attrDesc = attr
                             }

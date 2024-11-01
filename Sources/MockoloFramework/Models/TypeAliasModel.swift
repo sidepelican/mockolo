@@ -62,7 +62,6 @@ final class TypeAliasModel: Model {
     }
     
     func render(
-        with identifier: String,
         context: Void, 
         arguments: GenerationArguments
     ) -> String? {

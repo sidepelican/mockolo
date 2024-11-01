@@ -18,7 +18,6 @@ import Foundation
 
 extension MethodModel {
     func applyMethodTemplate(name: String,
-                             identifier: String,
                              kind: MethodKind,
                              arguments: GenerationArguments,
                              isStatic: Bool,
@@ -31,29 +30,29 @@ extension MethodModel {
                              accessLevel: String,
                              argsHistory: ArgumentsHistoryModel?,
                              handler: ClosureModel?,
-                             context: MemberRenderContext) -> String {
+                             context: MethodRenderContext) -> String {
         let returnTypeName = returnType.isUnknown ? "" : returnType.typeName
 
         let acl = accessLevel.isEmpty ? "" : accessLevel+" "
-        let genericTypeDeclsStr = genericTypeParams.compactMap {$0.render(with: "")}.joined(separator: ", ")
+        let genericTypeDeclsStr = genericTypeParams.compactMap {$0.render()}.joined(separator: ", ")
         let genericTypesStr = genericTypeDeclsStr.isEmpty ? "" : "<\(genericTypeDeclsStr)>"
         var genericWhereStr = ""
         if let clause = genericWhereClause {
             genericWhereStr = " \(clause)"
         }
-        let paramDeclsStr = params.compactMap{$0.render(with: "")}.joined(separator: ", ")
+        let paramDeclsStr = params.compactMap{$0.render()}.joined(separator: ", ")
 
         switch kind {
         case .initKind(_, _):  // ClassTemplate needs to handle this as it needs a context of all the vars
             return ""
         default:
 
-            guard let handler = handler else { return "" }
+            guard let handler else { return "" }
 
-            let callCount = "\(identifier)\(String.callCountSuffix)"
-            let handlerVarName = "\(identifier)\(String.handlerSuffix)"
+            let callCount = "\(context.overloadingResolvedName)\(String.callCountSuffix)"
+            let handlerVarName = "\(context.overloadingResolvedName)\(String.handlerSuffix)"
             let handlerVarType = handler.type(context: context).typeName // ?? "Any"
-            let handlerReturn = handler.render(with: identifier, context: context) ?? ""
+            let handlerReturn = handler.render(context: context) ?? ""
 
             let suffixStr = applyFunctionSuffixTemplate(
                 isAsync: isAsync,
@@ -94,8 +93,8 @@ extension MethodModel {
                 \(2.tab)\(callCount) += 1
                 """
 
-                if let argsHistory = argsHistory, argsHistory.enable(force: arguments.enableFuncArgsHistory) {
-                    let argsHistoryCapture = argsHistory.render(with: identifier, context: context, arguments: arguments) ?? ""
+                if let argsHistory, argsHistory.enable(force: arguments.enableFuncArgsHistory) {
+                    let argsHistoryCapture = argsHistory.render(context: context, arguments: arguments) ?? ""
 
                     body = """
                     \(body)
@@ -135,7 +134,7 @@ extension MethodModel {
             """
 
             if let argsHistory = argsHistory, argsHistory.enable(force: arguments.enableFuncArgsHistory) {
-                let argsHistoryVarName = "\(identifier)\(String.argsHistorySuffix)"
+                let argsHistoryVarName = "\(context.overloadingResolvedName)\(String.argsHistorySuffix)"
                 let argsHistoryVarType = argsHistory.type.typeName
 
                 template = """

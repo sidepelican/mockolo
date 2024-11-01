@@ -33,7 +33,7 @@ final class ClosureModel: Model {
     init(name: String, genericTypeParams: [ParamModel], paramNames: [String], paramTypes: [SwiftType], isAsync: Bool, throwing: ThrowingKind, returnType: SwiftType) {
         // In the mock's call handler, rethrows is unavailable.
         let throwing = throwing.coerceRethrowsToThrows
-        self.name = name + .handlerSuffix
+        self.name = name
         self.isAsync = isAsync
         self.throwing = throwing
         self.genericTypeNames = genericTypeParams.map(\.name)
@@ -42,7 +42,7 @@ final class ClosureModel: Model {
         self.funcReturnType = returnType
     }
 
-    func type(context: MemberRenderContext) -> SwiftType {
+    func type(context: MethodRenderContext) -> SwiftType {
         return SwiftType.toClosureType(
             params: paramTypes,
             typeParams: genericTypeNames,
@@ -54,12 +54,11 @@ final class ClosureModel: Model {
     }
 
     func render(
-        with identifier: String,
-        context: MemberRenderContext,
+        context: MethodRenderContext,
         arguments: GenerationArguments = .default
     ) -> String? {
         return applyClosureTemplate(type: type(context: context),
-                                    name: identifier + .handlerSuffix,
+                                    name: context.overloadingResolvedName + .handlerSuffix,
                                     paramVals: paramNames,
                                     paramTypes: paramTypes,
                                     returnDefaultType: funcReturnType)

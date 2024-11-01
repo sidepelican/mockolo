@@ -89,7 +89,6 @@ final class ParamModel: Model {
     }
     
     func render(
-        with identifier: String,
         context: Void = (),
         arguments: GenerationArguments = .default
     ) -> String? {

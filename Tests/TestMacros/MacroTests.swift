@@ -1,9 +1,16 @@
-import Foundation
+import XCTest
 
 class MacroTests: MockoloTestCase {
-   func testMacroInFunc() {
+    func testMacroInFunc() {
         verify(srcContent: macroInFunc,
                dstContent: macroInFuncMock)
+    }
+
+    func testMacroInFuncWithOverload() {
+        XCTExpectFailure("Resolving overloading in #if is broken.") {
+            verify(srcContent: macroInFuncWithOverload,
+                   dstContent: macroInFuncWithOverloadMock)
+        }
     }
 
     func testMacroImports() {

@@ -108,14 +108,18 @@ extension VariableModel {
 
         case .computed(let effects):
             let body = (ClosureModel(
-                name: "",
+                name: name,
                 genericTypeParams: [],
                 paramNames: [],
                 paramTypes: [],
                 isAsync: effects.isAsync,
                 throwing: effects.throwing,
                 returnType: type
-            ).render(with: name, context: context) ?? "")
+            ).render(context: .init(
+                overloadingResolvedName: name, // var cannot overload. this is ok
+                enclosingType: context.enclosingType,
+                annotatedTypeKind: context.annotatedTypeKind
+            )) ?? "")
                 .addingIndent(1)
 
             return """

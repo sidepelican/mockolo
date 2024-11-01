@@ -44,25 +44,14 @@ extension NominalModel {
                 if model.modelType == .method, let model = model as? MethodModel, model.isInitializer, !model.processed {
                     return nil
                 }
-                if let model = model as? any Model<MemberRenderContext> {
-                    if let ret = model.render(
-                        with: uniqueId,
-                        context: MemberRenderContext(
-                            enclosingType: type,
-                            annotatedTypeKind: declKindOfMockAnnotatedBaseType
-                        ),
-                        arguments: arguments
-                    ) {
-                        return (ret, model.offset)
-                    }
-                } else if let model = model as? any Model<Void> {
-                    if let ret = model.render(
-                        with: uniqueId,
-                        context: (),
-                        arguments: arguments
-                    ) {
-                        return (ret, model.offset)
-                    }
+                if let ret = applyGenericRender(
+                    model,
+                    overloadingResolvedName: uniqueId,
+                    enclosingType: type,
+                    annotatedTypeKind: declKindOfMockAnnotatedBaseType,
+                    arguments: arguments
+                ) {
+                    return (ret, model.offset)
                 }
                 return nil
         }
@@ -214,9 +203,9 @@ extension NominalModel {
             if case let .initKind(required, override) = m.kind, !m.processed {
                 let modifier = required ? "\(String.required) " : (override ? "\(String.override) " : "")
                 let mAcl = m.accessLevel.isEmpty ? "" : "\(m.accessLevel) "
-                let genericTypeDeclsStr = m.genericTypeParams.compactMap {$0.render(with: "")}.joined(separator: ", ")
+                let genericTypeDeclsStr = m.genericTypeParams.compactMap {$0.render()}.joined(separator: ", ")
                 let genericTypesStr = genericTypeDeclsStr.isEmpty ? "" : "<\(genericTypeDeclsStr)>"
-                let paramDeclsStr = m.params.compactMap{$0.render(with: "")}.joined(separator: ", ")
+                let paramDeclsStr = m.params.compactMap{$0.render()}.joined(separator: ", ")
                 let suffixStr = applyFunctionSuffixTemplate(
                     isAsync: m.isAsync,
                     throwing: m.throwing

@@ -24,7 +24,6 @@ func renderTemplates(entities: [ResolvedEntity],
     scan(entities) { (resolvedEntity, lock) in
         let mockModel = resolvedEntity.model()
         if let mockString = mockModel.render(
-            with: resolvedEntity.key,
             context: (),
             arguments: arguments
         ), !mockString.isEmpty {
