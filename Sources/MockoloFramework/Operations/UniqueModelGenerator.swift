@@ -14,7 +14,7 @@
 //  limitations under the License.
 //
 
-import Foundation
+import Algorithms
 
 /// Performs uniquifying operations on models of an entity
 
@@ -45,7 +45,7 @@ private func generateUniqueModels(key: String,
             return .protocolType
         }
     }()
-    let (models, processedModels, attributes, inheritedTypes, paths, pathToContentList) = lookupEntities(key: key, declType: declType, protocolMap: protocolMap, inheritanceMap: inheritanceMap)
+    let (models, processedModels, attributes, inheritedTypes, paths) = lookupEntities(key: key, declType: declType, protocolMap: protocolMap, inheritanceMap: inheritanceMap)
 
     let processedFullNames = processedModels.compactMap {$0.fullName}
 
@@ -62,13 +62,15 @@ private func generateUniqueModels(key: String,
     
     var processedLookup = Dictionary<String, any Model>()
     processedElements.forEach { (key, val) in processedLookup[key] = val }
-    
-    let nonMethodModels = models.filter {$0.modelType != .method}
-    let methodModels = models.filter {$0.modelType == .method}
+
+    let (nonMethodModels, methodModels) = models.partitioned(by: { $0.modelType == .method })
     let orderedModels = [nonMethodModels, methodModels].flatMap {$0}
-    let x = uniqueEntities(in: orderedModels, exclude: processedLookup, fullnames: processedFullNames)
-    let unmockedUniqueEntities = x.filter {!$0.value.processed}
-    
+    let unmockedUniqueEntities = uniqueEntities(
+        in: orderedModels,
+        exclude: processedLookup,
+        fullnames: processedFullNames
+    ).filter {!$0.value.processed}
+
     let processedElementsMap = Dictionary(grouping: processedModels) { element in element.fullName }
         .compactMap { (key, value) in value.first }
         .map { element in (element.fullName, element) }
@@ -90,5 +92,5 @@ private func generateUniqueModels(key: String,
         inheritsActorProtocol: inheritedTypes.contains(.actorProtocol)
     )
 
-    return ResolvedEntityContainer(entity: resolvedEntity, paths: paths, imports: pathToContentList)
+    return ResolvedEntityContainer(entity: resolvedEntity, paths: paths)
 }
