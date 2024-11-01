@@ -35,7 +35,7 @@ final class TypeAliasModel: Model {
         return .typeAlias
     }
 
-    init(name: String, typeName: String, acl: String?, encloserType: DeclType, overrideTypes: [String: String]?, offset: Int64, length: Int64, modelDescription: String?, useDescription: Bool = false, processed: Bool) {
+    init(name: String, typeName: String, acl: String?, encloserType: FindTargetDeclType, overrideTypes: [String: String]?, offset: Int64, length: Int64, modelDescription: String?, useDescription: Bool = false, processed: Bool) {
         self.name = name
         self.accessLevel = acl ?? ""
         self.offset = offset

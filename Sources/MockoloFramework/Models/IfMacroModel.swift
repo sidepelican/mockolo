@@ -19,7 +19,6 @@ import Foundation
 final class IfMacroModel: Model {
     var name: String
     var offset: Int64
-    var type: SwiftType
     let entities: [any Model<MemberRenderContext>]
 
     var modelType: ModelType {
@@ -36,7 +35,6 @@ final class IfMacroModel: Model {
         self.name = name
         self.entities = entities
         self.offset = offset
-        self.type = SwiftType(name)
     }
     
     func render(

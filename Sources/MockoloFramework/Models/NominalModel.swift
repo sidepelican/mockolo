@@ -17,11 +17,6 @@
 import Foundation
 
 final class NominalModel: Model {
-    enum NominalTypeDeclKind: String {
-        case `class`
-        case `actor`
-    }
-
     let namespaces: [String]
     var name: String
     var offset: Int64
@@ -29,7 +24,7 @@ final class NominalModel: Model {
     let attribute: String
     let accessLevel: String
     let identifier: String
-    let declTypeOfMockAnnotatedBaseType: DeclType
+    let declKindOfMockAnnotatedBaseType: NominalTypeDeclKind
     let inheritedTypes: [String]
     let entities: [(String, any Model)]
     let initParamCandidates: [VariableModel]
@@ -44,7 +39,7 @@ final class NominalModel: Model {
     init(identifier: String,
          namespaces: [String],
          acl: String,
-         declTypeOfMockAnnotatedBaseType: DeclType,
+         declKindOfMockAnnotatedBaseType: NominalTypeDeclKind,
          declKind: NominalTypeDeclKind,
          inheritedTypes: [String],
          attributes: [String],
@@ -57,7 +52,7 @@ final class NominalModel: Model {
         self.name = metadata?.nameOverride ?? (identifier + "Mock")
         self.type = SwiftType(self.name)
         self.namespaces = namespaces
-        self.declTypeOfMockAnnotatedBaseType = declTypeOfMockAnnotatedBaseType
+        self.declKindOfMockAnnotatedBaseType = declKindOfMockAnnotatedBaseType
         self.declKind = declKind
         self.inheritedTypes = inheritedTypes
         self.entities = entities
@@ -79,7 +74,6 @@ final class NominalModel: Model {
             identifier: self.identifier,
             accessLevel: accessLevel,
             attribute: attribute,
-            declTypeOfMockAnnotatedBaseType: declTypeOfMockAnnotatedBaseType,
             inheritedTypes: inheritedTypes,
             metadata: metadata,
             arguments: arguments,

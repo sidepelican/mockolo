@@ -22,66 +22,30 @@ public enum MethodKind: Equatable {
     case subscriptKind
 }
 
-final class MethodModel: Model {
-    init(name: String,
-         typeName: String,
-         kind: MethodKind,
-         encloserType: DeclType,
-         acl: String,
-         genericTypeParams: [ParamModel],
-         genericWhereClause: String?,
-         params: [ParamModel],
-         isAsync: Bool,
-         throwing: ThrowingKind,
-         isStatic: Bool,
-         offset: Int64,
-         length: Int64,
-         funcsWithArgsHistory: [String],
-         customModifiers: [String: Modifier],
-         modelDescription: String?,
-         processed: Bool) {
-        self.name = name.trimmingCharacters(in: .whitespaces)
-        self.type = SwiftType(typeName.trimmingCharacters(in: .whitespaces))
-        self.isAsync = isAsync
-        self.throwing = throwing
-        self.offset = offset
-        self.length = length
-        self.kind = kind
-        self.isStatic = isStatic
-        self.shouldOverride = encloserType == .classType
-        self.params = params
-        self.genericTypeParams = genericTypeParams
-        self.genericWhereClause = genericWhereClause
-        self.processed = processed
-        self.funcsWithArgsHistory = funcsWithArgsHistory
-        self.customModifiers = customModifiers
-        self.modelDescription = modelDescription
-        self.accessLevel = acl
+struct MethodModel: Model {
+    var name: String
+    var returnType: SwiftType
+    var accessLevel: String
+    var kind: MethodKind
+    var offset: Int64
+    var length: Int64
+    var attributes: [String]? = nil
+    var genericTypeParams: [ParamModel]
+    var genericWhereClause: String? = nil
+    var params: [ParamModel]
+    var processed: Bool
+    var modelDescription: String? = nil
+    var isStatic: Bool
+    var isAsync: Bool
+    var throwing: ThrowingKind
+    var funcsWithArgsHistory: [String]
+    var customModifiers: [String : Modifier]
+    var modelType: ModelType {
+        return .method
     }
 
     var filePath: String = ""
     var data: Data? = nil
-    var name: String
-    var type: SwiftType
-    var offset: Int64
-    let length: Int64
-    let accessLevel: String
-    var attributes: [String]? = nil
-    let genericTypeParams: [ParamModel]
-    var genericWhereClause: String? = nil
-    let params: [ParamModel]
-    let processed: Bool
-    var modelDescription: String? = nil
-    var isStatic: Bool
-    let shouldOverride: Bool
-    let isAsync: Bool
-    let throwing: ThrowingKind
-    let kind: MethodKind
-    let funcsWithArgsHistory: [String]
-    let customModifiers: [String : Modifier]
-    var modelType: ModelType {
-        return .method
-    }
 
     private var staticKind: String {
         return isStatic ? .static : ""
@@ -135,7 +99,7 @@ final class MethodModel: Model {
         return false
     }
 
-    lazy var signatureComponents: [String] = {
+    var signatureComponents: [String] {
         let paramLabels = self.params.map {$0.label != "_" ? $0.label : ""}
         let paramNames = self.params.map(\.name)
         let paramTypes = self.params.map(\.type)
@@ -150,31 +114,29 @@ final class MethodModel: Model {
 
         let genericTypeNames = self.genericTypeParams.map { $0.name.capitalizeFirstLetter + $0.type.displayName }
         args.append(contentsOf: genericTypeNames)
-        if let genericWhereClause {
+        if genericWhereClause != nil {
             args.append(genericWhereClauseToSignatureComponent)
         }
         args.append(contentsOf: paramTypes.map(\.displayName))
-        var displayType = self.type.displayName
+        var displayType = returnType.displayName
         let capped = min(displayType.count, 32)
         displayType.removeLast(displayType.count-capped)
         args.append(displayType)
         args.append(self.staticKind)
         let ret = args.filter{ arg in !arg.isEmpty }
         return ret
-    }()
+    }
 
-    lazy var argsHistory: ArgumentsHistoryModel? = {
+    var argsHistory: ArgumentsHistoryModel? {
         if isInitializer || isSubscript {
             return nil
         }
 
-        let ret = ArgumentsHistoryModel(name: name,
-                                        genericTypeParams: genericTypeParams,
-                                        params: params,
-                                        isHistoryAnnotated: funcsWithArgsHistory.contains(name))
-
-        return ret
-    }()
+        return ArgumentsHistoryModel(name: name,
+                                     genericTypeParams: genericTypeParams,
+                                     params: params,
+                                     isHistoryAnnotated: funcsWithArgsHistory.contains(name))
+    }
 
     func handler() -> ClosureModel? {
         if isInitializer {
@@ -187,7 +149,7 @@ final class MethodModel: Model {
                             paramTypes: params.map(\.type),
                             isAsync: isAsync,
                             throwing: throwing,
-                            returnType: type)
+                            returnType: returnType)
     }
 
     var fullName: String {
@@ -208,6 +170,7 @@ final class MethodModel: Model {
         context: MemberRenderContext,
         arguments: GenerationArguments
     ) -> String? {
+        let shouldOverride = context.annotatedTypeKind == .class
         if processed {
             var prefix = shouldOverride  ? "\(String.override) " : ""
 
@@ -233,7 +196,7 @@ final class MethodModel: Model {
                                    genericTypeParams: genericTypeParams,
                                    genericWhereClause: genericWhereClause,
                                    params: params,
-                                   returnType: type,
+                                   returnType: returnType,
                                    accessLevel: accessLevel,
                                    argsHistory: argsHistory,
                                    handler: handler(),

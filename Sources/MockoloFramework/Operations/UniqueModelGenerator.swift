@@ -34,8 +34,18 @@ private func generateUniqueModels(key: String,
                                   entity: Entity,
                                   protocolMap: [String: Entity],
                                   inheritanceMap: [String: Entity]) -> ResolvedEntityContainer {
-    
-    let (models, processedModels, attributes, inheritedTypes, paths, pathToContentList) = lookupEntities(key: key, declType: entity.entityNode.declType, protocolMap: protocolMap, inheritanceMap: inheritanceMap)
+
+    let declType: FindTargetDeclType = {
+        switch entity.entityNode.declKind {
+        case .class:
+            return .classType
+        case .actor:
+            return .other
+        case .protocol:
+            return .protocolType
+        }
+    }()
+    let (models, processedModels, attributes, inheritedTypes, paths, pathToContentList) = lookupEntities(key: key, declType: declType, protocolMap: protocolMap, inheritanceMap: inheritanceMap)
 
     let processedFullNames = processedModels.compactMap {$0.fullName}
 

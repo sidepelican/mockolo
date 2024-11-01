@@ -61,7 +61,7 @@ struct ResolvedEntity {
         return NominalModel(identifier: key,
                             namespaces: entity.entityNode.namespaces,
                             acl: entity.entityNode.accessLevel,
-                            declTypeOfMockAnnotatedBaseType: entity.entityNode.declType,
+                            declKindOfMockAnnotatedBaseType: entity.entityNode.declKind,
                             declKind: inheritsActorProtocol ? .actor : .class,
                             inheritedTypes: inheritedTypes,
                             attributes: attributes,
@@ -85,11 +85,11 @@ protocol EntityNode {
     var mayHaveGlobalActor: Bool { get }
     var accessLevel: String { get }
     var attributesDescription: String { get }
-    var declType: DeclType { get }
+    var declKind: NominalTypeDeclKind { get }
     var inheritedTypes: [String] { get }
     var offset: Int64 { get }
     var hasBlankInit: Bool { get }
-    func subContainer(metadata: AnnotationMetadata?, declType: DeclType, path: String?, isProcessed: Bool) -> EntityNodeSubContainer
+    func subContainer(metadata: AnnotationMetadata?, declType: FindTargetDeclType, path: String?, isProcessed: Bool) -> EntityNodeSubContainer
 }
 
 final class EntityNodeSubContainer {

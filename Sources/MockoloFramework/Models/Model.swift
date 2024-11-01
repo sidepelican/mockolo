@@ -27,8 +27,15 @@ public enum ModelType {
     case closure
 }
 
+enum NominalTypeDeclKind: String {
+    case `class`
+    case `actor`
+    case `protocol`
+}
+
 struct MemberRenderContext {
     var enclosingType: SwiftType
+    var annotatedTypeKind: NominalTypeDeclKind
 }
 
 /// Represents a model for an entity such as var, func, class, etc.
@@ -45,9 +52,6 @@ protocol Model<RenderContext> {
 
     /// Indicates whether mock generation for this model has been processed
     var processed: Bool { get }
-
-    /// Decl(e.g. class/struct/protocol/enum) or return type (e.g. var/func)
-    var type: SwiftType { get }
 
     /// Offset where this type is declared
     var offset: Int64 { get }

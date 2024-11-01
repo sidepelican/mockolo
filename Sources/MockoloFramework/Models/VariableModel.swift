@@ -17,7 +17,7 @@ final class VariableModel: Model {
     var offset: Int64
     let accessLevel: String
     let attributes: [String]?
-    let encloserType: DeclType
+    let encloserType: FindTargetDeclType
     /// Indicates whether this model can be used as a parameter to an initializer
     var canBeInitParam: Bool
     let processed: Bool
@@ -50,7 +50,7 @@ final class VariableModel: Model {
     init(name: String,
          typeName: String,
          acl: String?,
-         encloserType: DeclType,
+         encloserType: FindTargetDeclType,
          isStatic: Bool,
          storageKind: MockStorageKind,
          canBeInitParam: Bool,

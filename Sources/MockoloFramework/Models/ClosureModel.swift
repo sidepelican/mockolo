@@ -18,10 +18,6 @@ import Foundation
 
 final class ClosureModel: Model {
     var name: String
-    var type: SwiftType {
-        @available(*, unavailable)
-        get { fatalError("ClosureModel cannot define the type itself without context.") }
-    }
     var offset: Int64 = .max
     let funcReturnType: SwiftType
     let genericTypeNames: [String]
