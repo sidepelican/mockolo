@@ -33,7 +33,7 @@ extension NominalModel {
         let acl = accessLevel.isEmpty ? "" : accessLevel + " "
         let typealiases = typealiasWhitelist(in: entities)
         let renderedEntities = entities
-            .compactMap { (uniqueId: String, model: any Model) -> (String, Int64)? in
+            .compactMap { (uniqueId: String, model: any Model) -> String? in
                 if model.modelType == .typeAlias, let _ = typealiases?[model.name] {
                     // this case will be handlded by typealiasWhitelist look up later
                     return nil
@@ -49,18 +49,11 @@ extension NominalModel {
                     ),
                     arguments: arguments
                 ) {
-                    return (ret, model.offset)
+                    return ret
                 }
                 return nil
-        }
-        .sorted { (left: (String, Int64), right: (String, Int64)) -> Bool in
-            if left.1 == right.1 {
-                return left.0 < right.0
             }
-            return left.1 < right.1
-        }
-        .map {$0.0}
-        .joined(separator: "\n")
+            .joined(separator: "\n")
         
         var typealiasTemplate = ""
         let addAcl = declKindOfMockAnnotatedBaseType == .protocol ? acl : ""

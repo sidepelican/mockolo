@@ -45,11 +45,11 @@ private func generateUniqueModels(key: String,
             return .protocolType
         }
     }()
-    let (models, processedModels, attributes, inheritedTypes, paths) = lookupEntities(key: key, declType: declType, protocolMap: protocolMap, inheritanceMap: inheritanceMap)
+    let found = lookupEntities(key: key, declType: declType, protocolMap: protocolMap, inheritanceMap: inheritanceMap)
 
-    let processedFullNames = processedModels.compactMap {$0.fullName}
+    let processedFullNames = found.processedModels.compactMap {$0.fullName}
 
-    let processedElements = processedModels.compactMap { (element: (any Model)) -> (String, any Model)? in
+    let processedElements = found.processedModels.compactMap { (element: (any Model)) -> (String, any Model)? in
         let name = element.name
         if let rng = name.range(of: String.setCallCountSuffix) {
             return (String(name[name.startIndex..<rng.lowerBound]), element)
@@ -60,10 +60,9 @@ private func generateUniqueModels(key: String,
         return nil
     }
     
-    var processedLookup = Dictionary<String, any Model>()
-    processedElements.forEach { (key, val) in processedLookup[key] = val }
+    let processedLookup = Dictionary<String, any Model>(processedElements, uniquingKeysWith: { $1 })
 
-    let (nonMethodModels, methodModels) = models.partitioned(by: { $0.modelType == .method })
+    let (nonMethodModels, methodModels) = found.models.partitioned(by: { $0.modelType == .method })
     let orderedModels = [nonMethodModels, methodModels].flatMap {$0}
     let unmockedUniqueEntities = uniqueEntities(
         in: orderedModels,
@@ -71,15 +70,16 @@ private func generateUniqueModels(key: String,
         fullnames: processedFullNames
     ).filter {!$0.value.processed}
 
-    let processedElementsMap = Dictionary(grouping: processedModels) { element in element.fullName }
+    let processedElementsMap = Dictionary(grouping: found.processedModels) { element in element.fullName }
         .compactMap { (key, value) in value.first }
         .map { element in (element.fullName, element) }
     let mockedUniqueEntities = Dictionary(uniqueKeysWithValues: processedElementsMap)
 
     let uniqueModels = [mockedUniqueEntities, unmockedUniqueEntities].flatMap {$0}
+        .sorted(path: \.value.offset, fallback: \.key)
 
     var mockInheritedTypes = [String]()
-    if inheritedTypes.contains(.sendable) {
+    if found.inheritedTypes.contains(.sendable) {
         mockInheritedTypes.append(.uncheckedSendable)
     }
 
@@ -87,10 +87,10 @@ private func generateUniqueModels(key: String,
         key: key,
         entity: entity,
         uniqueModels: uniqueModels,
-        attributes: attributes,
+        attributes: found.attributes,
         inheritedTypes: mockInheritedTypes,
-        inheritsActorProtocol: inheritedTypes.contains(.actorProtocol)
+        inheritsActorProtocol: found.inheritedTypes.contains(.actorProtocol)
     )
 
-    return ResolvedEntityContainer(entity: resolvedEntity, paths: paths)
+    return ResolvedEntityContainer(entity: resolvedEntity, paths: found.paths)
 }

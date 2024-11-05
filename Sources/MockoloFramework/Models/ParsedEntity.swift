@@ -18,11 +18,11 @@ import Foundation
 
 /// Metadata containing unique models and potential init params ready to be rendered for output
 struct ResolvedEntity {
-    let key: String
-    let entity: Entity
-    let uniqueModels: [(String, any Model)]
-    let attributes: [String]
-    let inheritedTypes: [String]
+    var key: String
+    var entity: Entity
+    var uniqueModels: [(String, any Model)]
+    var attributes: [String]
+    var inheritedTypes: [String]
     var inheritsActorProtocol: Bool
 
     var declaredInits: [MethodModel] {
@@ -74,8 +74,8 @@ struct ResolvedEntity {
 }
 
 struct ResolvedEntityContainer {
-    let entity: ResolvedEntity
-    let paths: [String]
+    var entity: ResolvedEntity
+    var paths: [String]
 }
 
 protocol EntityNode {
@@ -90,15 +90,10 @@ protocol EntityNode {
     func subContainer(metadata: AnnotationMetadata?, declType: FindTargetDeclType, path: String?, isProcessed: Bool) -> EntityNodeSubContainer
 }
 
-final class EntityNodeSubContainer {
-    let attributes: [String]
-    let members: [any Model]
-    let hasInit: Bool
-    init(attributes: [String], members: [any Model], hasInit: Bool) {
-        self.attributes = attributes
-        self.members = members
-        self.hasInit = hasInit
-    }
+struct EntityNodeSubContainer {
+    var attributes: [String]
+    var members: [any Model]
+    var hasInit: Bool
 }
 
 public enum CombineType {
