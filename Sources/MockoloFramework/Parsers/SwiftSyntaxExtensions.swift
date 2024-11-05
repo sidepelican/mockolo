@@ -30,7 +30,6 @@ extension SyntaxProtocol {
     }
 }
 
-
 extension AttributeListSyntax {
     var trimmedDescription: String? {
         return self.trimmed.description.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -276,10 +275,6 @@ extension ProtocolDeclSyntax: EntityNode {
         self.attributes.trimmedDescription ?? ""
     }
 
-    var offset: Int64 {
-        return Int64(self.position.utf8Offset)
-    }
-
     func annotationMetadata(with annotation: String) -> AnnotationMetadata? {
         return leadingTrivia.annotationMetadata(with: annotation)
     }
@@ -316,10 +311,6 @@ extension ClassDeclSyntax: EntityNode {
 
     var attributesDescription: String {
         self.attributes.trimmedDescription ?? ""
-    }
-
-    var offset: Int64 {
-        return Int64(self.position.utf8Offset)
     }
 
     var isFinal: Bool {
