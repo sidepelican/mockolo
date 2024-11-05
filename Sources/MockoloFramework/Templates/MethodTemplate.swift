@@ -39,10 +39,7 @@ extension MethodModel {
         let acl = accessLevel.isEmpty ? "" : accessLevel+" "
         let genericTypeDeclsStr = genericTypeParams.compactMap {$0.render()}.joined(separator: ", ")
         let genericTypesStr = genericTypeDeclsStr.isEmpty ? "" : "<\(genericTypeDeclsStr)>"
-        var genericWhereStr = ""
-        if let clause = genericWhereClause {
-            genericWhereStr = " \(clause)"
-        }
+        let genericWhereStr = genericWhereClause.map { "\($0) " } ?? ""
         let paramDeclsStr = params.compactMap{$0.render()}.joined(separator: ", ")
 
         switch kind {
@@ -61,7 +58,7 @@ extension MethodModel {
                 isAsync: isAsync,
                 throwing: throwing
             )
-            let returnStr = returnTypeName.isEmpty ? "" : "-> \(returnTypeName)"
+            let returnStr = returnTypeName.isEmpty ? "" : "-> \(returnTypeName) "
             let staticStr = isStatic ? String.static + " " : ""
             let keyword = isSubscript ? "" : "func "
             var body = ""
@@ -149,7 +146,7 @@ extension MethodModel {
             return """
             \(template)
             \(1.tab)\(acl)\(staticStr)var \(handlerVarName): \(handlerVarType)
-            \(1.tab)\(acl)\(staticStr)\(overrideStr)\(modifierTypeStr)\(keyword)\(name)\(genericTypesStr)(\(paramDeclsStr)) \(suffixStr)\(returnStr)\(genericWhereStr) {
+            \(1.tab)\(acl)\(staticStr)\(overrideStr)\(modifierTypeStr)\(keyword)\(name)\(genericTypesStr)(\(paramDeclsStr)) \(suffixStr)\(returnStr)\(genericWhereStr){
             \(wrapped)
             \(1.tab)}
             """
