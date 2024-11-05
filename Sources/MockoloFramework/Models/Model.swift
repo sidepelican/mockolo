@@ -40,7 +40,7 @@ struct RenderContext {
 }
 
 /// Represents a model for an entity such as var, func, class, etc.
-protocol Model {
+protocol Model: AnyObject {
     /// Identifier
     var name: String { get }
 

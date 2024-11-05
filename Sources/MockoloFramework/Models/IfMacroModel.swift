@@ -14,11 +14,15 @@
 //  limitations under the License.
 //
 
-import Foundation
-
 final class IfMacroModel: Model {
-    var name: String
-    var offset: Int64
+    internal init(name: String, offset: Int64, entities: [any Model]) {
+        self.name = name
+        self.offset = offset
+        self.entities = entities
+    }
+    
+    let name: String
+    let offset: Int64
     let entities: [any Model]
 
     var modelType: ModelType {
@@ -27,14 +31,6 @@ final class IfMacroModel: Model {
 
     var fullName: String {
         return entities.map {$0.fullName}.joined(separator: "_")
-    }
-    
-    init(name: String,
-         offset: Int64,
-         entities: [any Model]) {
-        self.name = name
-        self.entities = entities
-        self.offset = offset
     }
     
     func render(

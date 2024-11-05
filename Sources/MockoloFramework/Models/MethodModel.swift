@@ -22,24 +22,44 @@ public enum MethodKind: Equatable {
     case subscriptKind
 }
 
-struct MethodModel: Model {
-    var name: String
-    var returnType: SwiftType
-    var accessLevel: String
-    var kind: MethodKind
-    var offset: Int64
-    var length: Int64
-    var attributes: [String]? = nil
-    var genericTypeParams: [ParamModel]
-    var genericWhereClause: String? = nil
-    var params: [ParamModel]
-    var processed: Bool
-    var modelDescription: String? = nil
-    var isStatic: Bool
-    var isAsync: Bool
-    var throwing: ThrowingKind
-    var funcsWithArgsHistory: [String]
-    var customModifiers: [String : Modifier]
+final class MethodModel: Model {
+    internal init(name: String, returnType: SwiftType, accessLevel: String, kind: MethodKind, offset: Int64, length: Int64, attributes: [String]? = nil, genericTypeParams: [ParamModel], genericWhereClause: String? = nil, params: [ParamModel], processed: Bool, modelDescription: String? = nil, isStatic: Bool, isAsync: Bool, throwing: ThrowingKind, funcsWithArgsHistory: [String], customModifiers: [String : Modifier]) {
+        self.name = name
+        self.returnType = returnType
+        self.accessLevel = accessLevel
+        self.kind = kind
+        self.offset = offset
+        self.length = length
+        self.attributes = attributes
+        self.genericTypeParams = genericTypeParams
+        self.genericWhereClause = genericWhereClause
+        self.params = params
+        self.processed = processed
+        self.modelDescription = modelDescription
+        self.isStatic = isStatic
+        self.isAsync = isAsync
+        self.throwing = throwing
+        self.funcsWithArgsHistory = funcsWithArgsHistory
+        self.customModifiers = customModifiers
+    }
+    
+    let name: String
+    let returnType: SwiftType
+    let accessLevel: String
+    let kind: MethodKind
+    let offset: Int64
+    let length: Int64
+    let attributes: [String]?
+    let genericTypeParams: [ParamModel]
+    let genericWhereClause: String?
+    let params: [ParamModel]
+    let processed: Bool
+    let modelDescription: String?
+    let isStatic: Bool
+    let isAsync: Bool
+    let throwing: ThrowingKind
+    let funcsWithArgsHistory: [String]
+    let customModifiers: [String : Modifier]
     var modelType: ModelType {
         return .method
     }
