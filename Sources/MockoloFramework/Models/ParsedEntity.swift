@@ -184,7 +184,6 @@ public final class Entity {
 }
 
 enum Modifier: String {
-    case none = ""
     case weak = "weak"
     case dynamic = "dynamic"
 }
