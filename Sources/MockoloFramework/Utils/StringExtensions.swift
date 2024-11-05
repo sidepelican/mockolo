@@ -34,7 +34,6 @@ extension String {
     static let async = "async"
     static let await = "await"
     static let `inout` = "inout"
-    static let hasBlankInit = "_hasBlankInit"
     static let `Self` = "Self"
     static let `static` = "static"
     static let importSpace = "import "

@@ -38,9 +38,6 @@ extension NominalModel {
                     // this case will be handlded by typealiasWhitelist look up later
                     return nil
                 }
-                if model.modelType == .variable, model.name == String.hasBlankInit {
-                    return nil
-                }
                 if model.modelType == .method, let model = model as? MethodModel, model.isInitializer, !model.processed {
                     return nil
                 }

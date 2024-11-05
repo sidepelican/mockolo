@@ -87,7 +87,6 @@ protocol EntityNode {
     var declKind: NominalTypeDeclKind { get }
     var inheritedTypes: [String] { get }
     var offset: Int64 { get }
-    var hasBlankInit: Bool { get }
     func subContainer(metadata: AnnotationMetadata?, declType: FindTargetDeclType, path: String?, isProcessed: Bool) -> EntityNodeSubContainer
 }
 

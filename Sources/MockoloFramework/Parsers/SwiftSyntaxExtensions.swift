@@ -196,21 +196,6 @@ extension MemberBlockItemSyntax {
 }
 
 extension MemberBlockItemListSyntax {
-    var hasBlankInit: Bool {
-        for member in self {
-            if let varMember = member.decl.as(VariableDeclSyntax.self) {
-                for v in varMember.bindings {
-                    if let name = v.pattern.firstToken(viewMode: .sourceAccurate)?.text {
-                        if name == String.hasBlankInit {
-                            return true
-                        }
-                    }
-                }
-            }
-        }
-        return false
-    }
-
     func memberData(with encloserAcl: String, declType: FindTargetDeclType, metadata: AnnotationMetadata?, processed: Bool) -> EntityNodeSubContainer {
         var attributeList = [String]()
         var memberList = [any Model]()
@@ -299,10 +284,6 @@ extension ProtocolDeclSyntax: EntityNode {
         return leadingTrivia.annotationMetadata(with: annotation)
     }
 
-    var hasBlankInit: Bool {
-        return false
-    }
-
     func subContainer(metadata: AnnotationMetadata?, declType: FindTargetDeclType, path: String?, isProcessed: Bool) -> EntityNodeSubContainer {
         return self.memberBlock.members.memberData(with: accessLevel, declType: declType, metadata: metadata, processed: isProcessed)
     }
@@ -351,10 +332,6 @@ extension ClassDeclSyntax: EntityNode {
 
     var isPublic: Bool {
         return self.modifiers.isPublic 
-    }
-
-    var hasBlankInit: Bool {
-        return self.memberBlock.members.hasBlankInit
     }
 
     func annotationMetadata(with annotation: String) -> AnnotationMetadata? {
