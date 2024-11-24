@@ -537,7 +537,7 @@ public final class SwiftType {
             throwing: throwing
         )
 
-        let sendableStr = requiresSendable ? "@Sendable " : ""
+        let sendableStr = requiresSendable ? String.atSendable.withSpace : ""
         let typeStr = "\(sendableStr)(\(displayableParamStr)) \(suffixStr)-> \(displayableReturnType)"
         return SwiftType(typeStr, cast: returnTypeCast)
     }

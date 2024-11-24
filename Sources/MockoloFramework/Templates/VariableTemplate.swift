@@ -119,9 +119,11 @@ extension VariableModel {
             ), arguments: arguments) ?? "")
                 .addingIndent(1)
 
+            let sendableStr = context.requiresSendable ? String.atSendable.withSpace : ""
+
             return """
 
-            \(1.tab)\(acl)\(staticSpace)var \(name)\(String.handlerSuffix): (() \(effects.applyTemplate())-> \(type.typeName))?
+            \(1.tab)\(acl)\(staticSpace)var \(name)\(String.handlerSuffix): (\(sendableStr)() \(effects.applyTemplate())-> \(type.typeName))?
             \(1.tab)\(acl)\(staticSpace)\(overrideStr)\(modifierTypeStr)var \(name): \(type.typeName) {
             \(2.tab)get \(effects.applyTemplate()){
             \(body)

@@ -5,13 +5,17 @@ let sendableProtocol = """
 public protocol SendableProtocol: Sendable {
     func update(arg: Int) -> String
     func update(arg0: some Sendable, arg1: AnyObject) async throws
+
+    var getThrows: Int { get throws }
 }
 """
 
 let sendableProtocolMock = #"""
 public final class SendableProtocolMock: SendableProtocol {
     public init() { }
-
+    public init(getThrows: Int = 0) {
+        self.getThrowsHandler = { getThrows }
+    }
 
     private let updateState = MockoloMutex(MockoloHandlerState<Int, @Sendable (Int) -> String>())
     public var updateCallCount: Int {
@@ -58,7 +62,16 @@ public final class SendableProtocolMock: SendableProtocol {
         if let updateArg0Handler = updateArg0Handler {
             try await updateArg0Handler(arg0, arg1)
         }
-        
+    }
+
+    public var getThrowsHandler: (@Sendable () throws -> Int)?
+    public var getThrows: Int {
+        get throws {
+            if let getThrowsHandler = getThrowsHandler {
+                return try getThrowsHandler()
+            }
+            return 0
+        }
     }
 }
 """#
