@@ -64,7 +64,11 @@ public final class SendableProtocolMock: SendableProtocol {
         }
     }
 
-    public var getThrowsHandler: (@Sendable () throws -> Int)?
+    private let _getThrowsHandler = MockoloMutex<(@Sendable () throws -> Int)?>(nil)
+    public var getThrowsHandler: (@Sendable () throws -> Int)? {
+        get { getThrowsState.withLock { $0 } }
+        set { getThrowsState.withLock { $0 = newValue } }
+    }
     public var getThrows: Int {
         get throws {
             if let getThrowsHandler = getThrowsHandler {
