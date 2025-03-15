@@ -29,7 +29,7 @@ extension NominalModel {
         processCombineAliases(entities: entities)
         
         let acl = accessLevel.isEmpty ? "" : accessLevel + " "
-        let typealiases = typealiasWhitelist(in: entities)
+        let typealiases = typealiasWhitelist(in: entities, metadata: metadata)
         let renderedEntities = entities
             .compactMap { (uniqueId: String, model: Model) -> String? in
                 if model.modelType == .typeAlias, let _ = typealiases?[model.name] {
@@ -47,7 +47,8 @@ extension NominalModel {
                         overloadingResolvedName: uniqueId,
                         enclosingType: type,
                         annotatedTypeKind: declKindOfMockAnnotatedBaseType,
-                        requiresSendable: requiresSendable
+                        requiresSendable: requiresSendable,
+                        metadata: metadata
                     ),
                     arguments: arguments
                 ) {
@@ -60,9 +61,9 @@ extension NominalModel {
         var typealiasTemplate = ""
         let addAcl = declKindOfMockAnnotatedBaseType == .protocol ? acl : ""
         if let typealiasWhitelist = typealiases {
-            typealiasTemplate = typealiasWhitelist.map { (arg: (key: String, value: [String])) -> String in
-                let joinedType = arg.value.sorted().joined(separator: " & ")
-                return  "\(1.tab)\(addAcl)\(String.typealias) \(arg.key) = \(joinedType)"
+            typealiasTemplate = typealiasWhitelist.sorted(path: \.key).map { (key: String, value: [String]) -> String in
+                let joinedType = value.sorted().joined(separator: " & ")
+                return "\(1.tab)\(addAcl)\(String.typealias) \(key) = \(joinedType)"
             }.joined(separator: "\n")
         }
         
@@ -86,11 +87,11 @@ extension NominalModel {
         )
 
         var body = ""
-        if !typealiasTemplate.isEmpty {
-            body += "\(typealiasTemplate)\n"
-        }
         if !extraInits.isEmpty {
             body += "\(extraInits)\n"
+        }
+        if !typealiasTemplate.isEmpty {
+            body += "\(typealiasTemplate)\n"
         }
         if !renderedEntities.isEmpty {
             body += "\(renderedEntities)"
@@ -282,15 +283,23 @@ extension NominalModel {
     /// Returns a map of typealiases with conflicting types to be whitelisted
     /// @param models Potentially contains typealias models
     /// @returns A map of typealiases with multiple possible types
-    func typealiasWhitelist(`in` models: [(String, Model)]) -> [String: [String]]? {
+    func typealiasWhitelist(`in` models: [(String, Model)], metadata: AnnotationMetadata?) -> [String: [String]]? {
         var aliasMap = [String: Set<String>]()
         for (_, model) in models {
             if let alias = model as? TypeAliasModel {
                 aliasMap[alias.name, default: []].insert(alias.type.typeName)
             }
         }
-        let aliasDupes = aliasMap.filter {$0.value.count > 1}
-        return aliasDupes.isEmpty ? nil : aliasDupes.mapValues {$0.sorted()}
+
+        aliasMap = aliasMap.filter { $0.value.count > 1 }
+
+        if let typeAliases = metadata?.typeAliases {
+            for overrideTypeAlias in typeAliases {
+                aliasMap[overrideTypeAlias.key] = [overrideTypeAlias.value]
+            }
+        }
+
+        return aliasMap.isEmpty ? nil : aliasMap.mapValues {$0.sorted()}
     }
 
     // Finds all combine properties that are attempting to use a property wrapper alias

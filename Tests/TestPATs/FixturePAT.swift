@@ -38,9 +38,8 @@ class CatMock: Cat {
 }
 
 class BazMock: Baz {
-    typealias T = Any & Hashable & Codable & String
-    
     init() { }
+    typealias T = Any & String
 }
 """
 
@@ -84,10 +83,10 @@ let patOverrideMock = """
 class FooMock: Foo {
     init() { }
 
-    typealias T = Any
-    typealias U = Bar
     typealias R = (String, Int)
     typealias S = AnyObject
+    typealias T = Any
+    typealias U = Bar
 
     private(set) var updateCallCount = 0
     var updateHandler: ((T, U) -> (U, R))?
@@ -156,7 +155,7 @@ protocol Foo {
 let patPartialOverrideMock = """
 class FooMock: Foo {
     init() { }
-    typealias T = Any
     typealias U = AnyObject
+    typealias T = Any
 }
 """

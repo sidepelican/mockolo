@@ -183,11 +183,11 @@ extension MemberBlockItemSyntax {
             }
         } else if let patMember = self.decl.as(AssociatedTypeDeclSyntax.self) {
             let acl = memberAcl(patMember.modifiers, encloserAcl, declKind)
-            let item = patMember.model(with: acl, declKind: declKind, overrides: metadata?.typeAliases, processed: processed)
+            let item = patMember.model(with: acl, declKind: declKind, processed: processed)
             return (item, patMember.attributes.trimmedDescription, false)
         } else if let taMember = self.decl.as(TypeAliasDeclSyntax.self) {
             let acl = memberAcl(taMember.modifiers, encloserAcl, declKind)
-            let item = taMember.model(with: acl, declKind: declKind, overrides: metadata?.typeAliases, processed: processed)
+            let item = taMember.model(with: acl, declKind: declKind, processed: processed)
             return (item, taMember.attributes.trimmedDescription, false)
         } else if let ifMacroMember = self.decl.as(IfConfigDeclSyntax.self) {
             let (item, attr, initFlag) = ifMacroMember.model(with: encloserAcl, declKind: declKind, metadata: metadata, processed: processed)
@@ -645,7 +645,7 @@ extension FunctionParameterSyntax {
 }
 
 extension AssociatedTypeDeclSyntax {
-    func model(with acl: String, declKind: NominalTypeDeclKind, overrides: [String: String]?, processed: Bool) -> Model {
+    func model(with acl: String, declKind: NominalTypeDeclKind, processed: Bool) -> Model {
         // Get the inhertied type for an associated type if any
         var t = self.inheritanceClause?.typesDescription ?? ""
         t.append(self.genericWhereClause?.description ?? "")
@@ -653,7 +653,7 @@ extension AssociatedTypeDeclSyntax {
         return TypeAliasModel(name: self.name.text,
                               typeName: t,
                               acl: acl,
-                              overrideTypes: overrides,
+                              overrideTypes: nil,
                               offset: self.offset,
                               length: self.length,
                               modelDescription: self.description,
@@ -662,11 +662,11 @@ extension AssociatedTypeDeclSyntax {
 }
 
 extension TypeAliasDeclSyntax {
-    func model(with acl: String, declKind: NominalTypeDeclKind, overrides: [String: String]?, processed: Bool) -> Model {
+    func model(with acl: String, declKind: NominalTypeDeclKind, processed: Bool) -> Model {
         return TypeAliasModel(name: self.name.text,
                               typeName: self.initializer.value.description,
                               acl: acl,
-                              overrideTypes: overrides,
+                              overrideTypes: nil,
                               offset: self.offset,
                               length: self.length,
                               modelDescription: self.description,
