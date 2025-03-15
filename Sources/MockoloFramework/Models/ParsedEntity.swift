@@ -64,7 +64,7 @@ struct ResolvedEntity {
     }
 
     func model() -> Model {
-        return NominalModel(name: entity.metadata?.nameOverride ?? (key + "Mock"),
+        return NominalModel(name: key + "Mock",
                             namespaces: entity.entityNode.namespaces,
                             acl: entity.entityNode.accessLevel,
                             declKindOfMockAnnotatedBaseType: entity.entityNode.declKind,

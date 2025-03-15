@@ -65,7 +65,7 @@ final class NominalModel: Model {
         arguments: GenerationArguments
     ) -> String? {
         return applyNominalTemplate(
-            name: name,
+            name: context.metadata?.nameOverride ?? name,
             accessLevel: accessLevel,
             attribute: attribute,
             metadata: context.metadata,
