@@ -50,7 +50,7 @@ extension VariableModel {
         let privateSetSpace = allowSetCallCount ? "" :  "\(String.privateSet) "
 
         let modifierTypeStr: String
-        if let customModifiers = self.customModifiers,
+        if let customModifiers = context.metadata?.modifiers,
            let customModifier: Modifier = customModifiers[name] {
             modifierTypeStr = customModifier.rawValue + " "
         } else {
@@ -136,7 +136,8 @@ extension VariableModel {
                                       encloser: String,
                                       shouldOverride: Bool,
                                       isStatic: Bool,
-                                      accessLevel: String) -> String? {
+                                      accessLevel: String,
+                                      combineTypes: [String: CombineType]?) -> String? {
         let typeName = type.typeName
 
         guard
@@ -162,6 +163,7 @@ extension VariableModel {
         let thisStr = isStatic ? encloser : "self"
         let overrideStr = shouldOverride ? "\(String.override) " : ""
 
+        let combineType = combineTypes?[name] ?? .passthroughSubject
         switch combineType {
         case .property(_, var wrapperPropertyName):
             // Using a property wrapper to back this publisher, such as @Published
@@ -192,9 +194,9 @@ extension VariableModel {
             \(1.tab)\(acl)\(staticSpace)\(overrideStr)var \(name): \(typeName) { return \(thisStr).$\(wrapperPropertyName)\(mapping)\(setErrorType).\(String.eraseToAnyPublisher)() }
             """
             return template
-        default:
+        case .passthroughSubject, .currentValueSubject:
             // Using a combine subject to back this publisher
-            var combineSubjectType = combineType ?? .passthroughSubject
+            var combineSubjectType = combineType
 
             var defaultValue: String? = ""
             if case .currentValueSubject = combineSubjectType {

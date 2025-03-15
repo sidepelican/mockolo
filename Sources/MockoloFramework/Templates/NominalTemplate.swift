@@ -26,8 +26,10 @@ extension NominalModel {
                               declaredInits: [MethodModel],
                               entities: [(String, Model)]) -> String {
 
-        processCombineAliases(entities: entities)
-        
+        let combineTypes = processCombineAliases(entities: entities, metadata: metadata)
+        var metadata = metadata
+        metadata?.combineTypes = combineTypes
+
         let acl = accessLevel.isEmpty ? "" : accessLevel + " "
         let typealiases = typealiasWhitelist(in: entities, metadata: metadata)
         let renderedEntities = entities
@@ -305,32 +307,43 @@ extension NominalModel {
     // Finds all combine properties that are attempting to use a property wrapper alias
     // and locates the matching property within the class, if one exists.
     //
-    private func processCombineAliases(entities: [(String, Model)]) {
-        var variableModels = [VariableModel]()
-        var nameToVariableModels = [String: VariableModel]()
-
-        for entity in entities {
-            guard let variableModel = entity.1 as? VariableModel else {
-                continue
-            }
-            variableModels.append(variableModel)
-            nameToVariableModels[variableModel.name] = variableModel
+    private func processCombineAliases(entities: [(String, Model)], metadata: AnnotationMetadata?) -> [String: CombineType]? {
+        guard let metadata else {
+            return nil
         }
 
-        for variableModel in variableModels {
-            guard case .property(let wrapper, let name) = variableModel.combineType else {
-                continue
+        let nameToVariableModels = [String: VariableModel](entities.compactMap({
+            guard let variableModel = $1 as? VariableModel else {
+                return nil
+            }
+            return (variableModel.name, variableModel)
+        }), uniquingKeysWith: { $1 })
+
+        var result: [String: CombineType] = [:]
+
+        for (name, variableModel) in nameToVariableModels {
+            let combineType = metadata.combineTypes?[name] ?? metadata.combineTypes?["all"]
+            if let combineType {
+                result[name] = combineType
             }
 
-            // If a variable member in this entity already exists, link the two together.
-            // Otherwise, the user's setup is incorrect and we will fallback to using a PassthroughSubject.
-            //
-            if let matchingAliasModel = nameToVariableModels[name] {
-                variableModel.wrapperAliasModel = matchingAliasModel
-                matchingAliasModel.propertyWrapper = wrapper
-            } else {
-                variableModel.combineType = .passthroughSubject
+            print(name, "is", combineType)
+
+            if case .property(let wrapper, let delegatePropertyName) = combineType  {
+                // If a variable member in this entity already exists, link the two together.
+                // Otherwise, the user's setup is incorrect and we will fallback to using a PassthroughSubject.
+                //
+                if let matchingAliasModel = nameToVariableModels[delegatePropertyName] {
+                    variableModel.wrapperAliasModel = matchingAliasModel
+                    matchingAliasModel.propertyWrapper = wrapper
+                    print(name, "is not overridden")
+                } else {
+                    print(name, "is overridden")
+                    result[name] = .passthroughSubject
+                }
             }
         }
+
+        return result
     }
 }

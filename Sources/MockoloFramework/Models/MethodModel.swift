@@ -37,8 +37,6 @@ final class MethodModel: Model {
     let isStatic: Bool
     let isAsync: Bool
     let throwing: ThrowingKind
-    let funcsWithArgsHistory: [String]
-    let customModifiers: [String : Modifier]
     var modelType: ModelType {
         return .method
     }
@@ -123,7 +121,7 @@ final class MethodModel: Model {
         return ret
     }()
 
-    lazy var argsHistory: ArgumentsHistoryModel? = {
+    func argsHistory(metadata: AnnotationMetadata?) -> ArgumentsHistoryModel? {
         if isInitializer || isSubscript {
             return nil
         }
@@ -131,10 +129,10 @@ final class MethodModel: Model {
         let ret = ArgumentsHistoryModel(name: name,
                                         genericTypeParams: genericTypeParams,
                                         params: params,
-                                        isHistoryAnnotated: funcsWithArgsHistory.contains(name))
+                                        isHistoryAnnotated: metadata?.funcsWithArgsHistory?.contains(name) == true)
 
         return ret
-    }()
+    }
 
     func handler() -> ClosureModel? {
         if isInitializer {
@@ -160,8 +158,6 @@ final class MethodModel: Model {
          isStatic: Bool,
          offset: Int64,
          length: Int64,
-         funcsWithArgsHistory: [String],
-         customModifiers: [String: Modifier],
          modelDescription: String?,
          processed: Bool) {
         self.name = name.trimmingCharacters(in: .whitespaces)
@@ -176,8 +172,6 @@ final class MethodModel: Model {
         self.genericTypeParams = genericTypeParams
         self.genericWhereClause = genericWhereClause
         self.processed = processed
-        self.funcsWithArgsHistory = funcsWithArgsHistory
-        self.customModifiers = customModifiers
         self.modelDescription = modelDescription
         self.accessLevel = acl
     }

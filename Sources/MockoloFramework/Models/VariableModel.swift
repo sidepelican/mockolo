@@ -22,13 +22,12 @@ final class VariableModel: Model {
     let processed: Bool
     let isStatic: Bool
     let storageKind: MockStorageKind
-    let rxTypes: [String: String]?
-    let customModifiers: [String: Modifier]?
     let modelDescription: String?
 
-    var combineType: CombineType?
+    // FIXME: May cause unstable results during inheritance
     var wrapperAliasModel: VariableModel?
     var propertyWrapper: String?
+
     var modelType: ModelType {
         return .variable
     }
@@ -52,10 +51,7 @@ final class VariableModel: Model {
          storageKind: MockStorageKind,
          canBeInitParam: Bool,
          offset: Int64,
-         rxTypes: [String: String]?,
-         customModifiers: [String: Modifier]?,
          modelDescription: String?,
-         combineType: CombineType?,
          processed: Bool) {
         self.name = name
         self.type = type
@@ -64,12 +60,9 @@ final class VariableModel: Model {
         self.storageKind = storageKind
         self.canBeInitParam = canBeInitParam
         self.processed = processed
-        self.rxTypes = rxTypes
-        self.customModifiers = customModifiers
         self.accessLevel = acl ?? ""
         self.attributes = nil
         self.modelDescription = modelDescription
-        self.combineType = combineType
     }
 
     func render(
@@ -102,7 +95,8 @@ final class VariableModel: Model {
                                                              encloser: enclosingType.typeName,
                                                              shouldOverride: shouldOverride,
                                                              isStatic: isStatic,
-                                                             accessLevel: accessLevel) {
+                                                             accessLevel: accessLevel,
+                                                             combineTypes: context.metadata?.combineTypes) {
                 return combineVar
             }
         }
@@ -110,7 +104,7 @@ final class VariableModel: Model {
         if let rxVar = applyRxVariableTemplate(name: name,
                                                type: type,
                                                encloser: enclosingType.typeName,
-                                               rxTypes: rxTypes,
+                                               rxTypes: context.metadata?.varTypes,
                                                shouldOverride: shouldOverride,
                                                useMockObservable: arguments.useMockObservable,
                                                allowSetCallCount: arguments.allowSetCallCount,
@@ -123,7 +117,7 @@ final class VariableModel: Model {
                                      type: type,
                                      encloser: enclosingType.typeName,
                                      isStatic: isStatic,
-                                     customModifiers: customModifiers,
+                                     customModifiers: context.metadata?.modifiers,
                                      allowSetCallCount: arguments.allowSetCallCount,
                                      shouldOverride: shouldOverride,
                                      accessLevel: accessLevel,

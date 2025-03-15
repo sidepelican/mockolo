@@ -78,7 +78,8 @@ extension MethodModel {
 
                 if context.requiresSendable {
                     let paramNamesStr: String?
-                    if let argsHistory = model.argsHistory, argsHistory.enable(force: arguments.enableFuncArgsHistory) {
+                    if let argsHistory = model.argsHistory(metadata: context.metadata),
+                       argsHistory.enable(force: arguments.enableFuncArgsHistory) {
                         paramNamesStr = argsHistory.capturableParamLabels.joined(separator: ", ")
                     } else {
                         paramNamesStr = nil
@@ -94,7 +95,8 @@ extension MethodModel {
                     ].compactMap { $0 }.joined(separator: "\n")
                 } else {
                     let argsHistoryCaptureCall: String?
-                    if let argsHistory = model.argsHistory, argsHistory.enable(force: arguments.enableFuncArgsHistory) {
+                    if let argsHistory = model.argsHistory(metadata: context.metadata),
+                       argsHistory.enable(force: arguments.enableFuncArgsHistory) {
                         let argsHistoryCapture = argsHistory.render(context: context, arguments: arguments) ?? ""
                         argsHistoryCaptureCall = argsHistoryCapture
                     } else {
@@ -118,7 +120,7 @@ extension MethodModel {
 
             let overrideStr = isOverride ? String.override.withSpace : ""
             let modifierTypeStr: String
-            if let customModifier: Modifier = model.customModifiers[model.name] {
+            if let customModifier: Modifier = context.metadata?.modifiers?[model.name] {
                 modifierTypeStr = customModifier.rawValue + " "
             } else {
                 modifierTypeStr = ""
@@ -182,7 +184,8 @@ extension MethodModel {
 
             let handlerType = handler.type(enclosingType: enclosingType, requiresSendable: context.requiresSendable).typeName
             let argumentsTupleType: String
-            if let argsHistory = model.argsHistory, argsHistory.enable(force: arguments.enableFuncArgsHistory) {
+            if let argsHistory = model.argsHistory(metadata: context.metadata),
+               argsHistory.enable(force: arguments.enableFuncArgsHistory) {
                 argumentsTupleType = argsHistory.capturedValueType.typeName
             } else {
                 argumentsTupleType = .neverType
@@ -213,7 +216,8 @@ extension MethodModel {
         }
 
         var argsHistoryVarDecl: String? {
-            if let argsHistory = model.argsHistory, argsHistory.enable(force: arguments.enableFuncArgsHistory) {
+            if let argsHistory = model.argsHistory(metadata: context.metadata),
+               argsHistory.enable(force: arguments.enableFuncArgsHistory) {
                 let capturedValueType = argsHistory.capturedValueType.typeName
 
                 if !context.requiresSendable {
