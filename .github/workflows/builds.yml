@@ -15,9 +15,9 @@ jobs:
         os: [macos-latest, ubuntu-latest]
         swift: ["5.10", "6.0"]
     steps:
-      - uses: swift-actions/setup-swift@v2
+      - uses: vapor/swiftly-action@afdde2275f2b916c2704383f3a6b72032adb488c
         with:
-          swift-version: ${{ matrix.swift }}
+          toolchain: ${{ matrix.swift }}
       - name: Checkout
         uses: actions/checkout@v4
       - name: Build and Test
