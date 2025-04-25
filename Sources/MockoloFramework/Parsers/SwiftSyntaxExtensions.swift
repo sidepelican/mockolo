@@ -224,6 +224,21 @@ extension MemberBlockItemListSyntax {
                 hasInit = hasInit || initFlag
             }
         }
+//        if let typeAliases = metadata?.typeAliases {
+//            for (lhs, rhs) in typeAliases {
+//                if !memberList.contains(where: { ($0 as? TypeAliasModel)?.name == lhs }) {
+//                    memberList.append(TypeAliasModel(
+//                        name: lhs,
+//                        typeName: rhs,
+//                        acl: encloserAcl,
+//                        offset: 0,
+//                        length: 0,
+//                        modelDescription: nil,
+//                        processed: false
+//                    ))
+//                }
+//            }
+//        }
         return EntityNodeSubContainer(attributes: attributeList, members: memberList, hasInit: hasInit)
     }
 }
