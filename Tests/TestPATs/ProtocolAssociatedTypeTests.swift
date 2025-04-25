@@ -15,6 +15,11 @@ class ProtocolAssociatedTypeTests: MockoloTestCase {
                dstContent: patPartialOverride.expected._source)
     }
 
+    func testOverrideParentPAT() {
+        verify(srcContent: overrideParentPAT._source,
+               dstContent: overrideParentPAT.expected._source)
+    }
+
     func testTypealias() {
         verify(srcContent: protocolWithTypealias._source,
                dstContent: protocolWithTypealias.expected._source)

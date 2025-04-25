@@ -62,6 +62,67 @@ import MockoloFramework
     }
 }
 
+@Fixture enum overrideParentPAT {
+    /// @mockable
+    protocol ProtocolA {
+        associatedtype ContextType
+    }
+    /// @mockable(typealias: ContextType = Void)
+    protocol ProtocolA2: ProtocolA {}
+
+    /// @mockable(typealias: ContextType = Int)
+    protocol ProtocolB {
+        associatedtype ContextType
+    }
+    /// @mockable(typealias: ContextType = Void)
+    protocol ProtocolB2: ProtocolB {}
+
+    /// @mockable(typealias: ContextType = Int)
+    protocol ProtocolC {
+        associatedtype ContextType
+    }
+    /// @mockable
+    protocol ProtocolC2: ProtocolC {}
+
+    @Fixture enum expected {
+        class ProtocolAMock: ProtocolA {
+            init() { }
+
+            typealias ContextType = Any
+        }
+
+        class ProtocolA2Mock: ProtocolA2 {
+            init() { }
+
+            typealias ContextType = Void
+        }
+
+        class ProtocolBMock: ProtocolB {
+            init() { }
+
+            typealias ContextType = Int
+        }
+
+        class ProtocolB2Mock: ProtocolB2 {
+            init() { }
+
+            typealias ContextType = Void
+        }
+
+        class ProtocolCMock: ProtocolC {
+            init() { }
+
+            typealias ContextType = Int
+        }
+
+        class ProtocolC2Mock: ProtocolC2 {
+            init() { }
+
+            typealias ContextType = Int
+        }
+    }
+}
+
 @Fixture enum protocolWithTypealias {
     /// @mockable
     public protocol SomeType {
