@@ -7,7 +7,10 @@ import MockoloFramework
         func update(arg0: some Sendable, arg1: AnyObject) async throws
     }
 
-    @Fixture(includesConcurrencyHelpers: true)
+    @Fixture(
+        imports: ["Foundation"],
+        includesConcurrencyHelpers: true
+    )
     enum expected {
         public final class SendableProtocolMock: SendableProtocol, @unchecked Sendable {
             public init() { }
@@ -72,7 +75,10 @@ import MockoloFramework
         }
     }
 
-    @Fixture(includesConcurrencyHelpers: true)
+    @Fixture(
+        imports: ["Foundation"],
+        includesConcurrencyHelpers: true
+    )
     enum expected {
         public final class UncheckedSendableClassMock: UncheckedSendableClass, @unchecked Sendable {
             public override init() { }
@@ -109,7 +115,10 @@ import MockoloFramework
     public protocol ConfirmedSendableProtocol: SendableSendable {
     }
 
-    @Fixture(includesConcurrencyHelpers: true)
+    @Fixture(
+        imports: ["Foundation"],
+        includesConcurrencyHelpers: true
+    )
     enum expected {
         public final class ConfirmedSendableProtocolMock: ConfirmedSendableProtocol, @unchecked Sendable {
             public init() { }
